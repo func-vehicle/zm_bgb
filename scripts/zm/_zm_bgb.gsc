@@ -93,7 +93,7 @@ function private on_player_spawned()
 
 function private function_52dbea8c()
 {
-	if(!(isdefined(self.var_c2d95bad) && self.var_c2d95bad))
+	if (!(IsDefined(self.var_c2d95bad) && self.var_c2d95bad))
 	{
 		self.var_c2d95bad = 1;
 		self globallogic_score::initPersStat("bgb_tokens_gained_this_game", 0);
@@ -184,12 +184,12 @@ function private bgb_end_game()
 function private bgb_finalize()
 {
 	statsTableName = util::getStatsTableName();
-	keys = getArrayKeys(level.bgb);
+	keys = GetArrayKeys(level.bgb);
 	for(i = 0; i < keys.size; i++)
 	{
 		level.bgb[keys[i]].item_index = GetItemIndexFromRef(keys[i]);
 		level.bgb[keys[i]].rarity = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
-		if(0 == level.bgb[keys[i]].rarity || 4 == level.bgb[keys[i]].rarity)
+		if (0 == level.bgb[keys[i]].rarity || 4 == level.bgb[keys[i]].rarity)
 		{
 			level.bgb[keys[i]].consumable = 0;
 		}
@@ -217,7 +217,7 @@ function private bgb_player_monitor()
 		str_return = level util::waittill_any_return("between_round_over", "restart_round");
 		if (IsDefined(level.var_4824bb2d))
 		{
-			if(!(isdefined(self [[level.var_4824bb2d]]()) && self [[level.var_4824bb2d]]()))
+			if (!(IsDefined(self [[level.var_4824bb2d]]()) && self [[level.var_4824bb2d]]()))
 			{
 				continue;
 			}
@@ -251,7 +251,7 @@ function private setup_devgui()
 		SetDvar("Dev Block strings are not supported", "Dev Block strings are not supported");
 		SetDvar("Dev Block strings are not supported", -1);
 		var_33b4e7c1 = "Dev Block strings are not supported";
-		keys = getArrayKeys(level.bgb);
+		keys = GetArrayKeys(level.bgb);
 		foreach(key in keys)
 		{
 			AddDebugCommand(var_33b4e7c1 + key + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + key + "Dev Block strings are not supported");
@@ -282,7 +282,7 @@ function private function_70fe94ae()
 		for(;;)
 		{
 			var_fe9a7d67 = GetDvarString("Dev Block strings are not supported");
-			if(var_fe9a7d67 != "Dev Block strings are not supported")
+			if (var_fe9a7d67 != "Dev Block strings are not supported")
 			{
 				function_dea9a9da(var_fe9a7d67);
 			}
@@ -308,11 +308,11 @@ function private function_dea9a9da(var_a961d470)
 		players = GetPlayers();
 		for(i = 0; i < players.size; i++)
 		{
-			if(var_a7032a9 != -1 && var_a7032a9 != i)
+			if (var_a7032a9 != -1 && var_a7032a9 != i)
 			{
 				continue;
 			}
-			if("Dev Block strings are not supported" == var_a961d470)
+			if ("Dev Block strings are not supported" == var_a961d470)
 			{
 				players[i] thread take();
 				continue;
@@ -365,11 +365,11 @@ function private function_ef47b774()
 function private bgb_set_debug_text(name, var_2741876d)
 {
 	/#
-		if(!isdefined(self.var_94ee23e0))
+		if (!IsDefined(self.var_94ee23e0))
 		{
 			return;
 		}
-		if(isdefined(var_2741876d))
+		if (IsDefined(var_2741876d))
 		{
 			self clientfield::set_player_uimodel("Dev Block strings are not supported", 1);
 		}
@@ -384,11 +384,11 @@ function private bgb_set_debug_text(name, var_2741876d)
 		self.var_94ee23e0.alpha = 1;
 		prefix = "Dev Block strings are not supported";
 		var_fc8642f1 = name;
-		if(IsSubStr(name, prefix))
+		if (IsSubStr(name, prefix))
 		{
 			var_fc8642f1 = GetSubStr(name, prefix.size);
 		}
-		if(isdefined(var_2741876d))
+		if (IsDefined(var_2741876d))
 		{
 			self.var_94ee23e0 setText("Dev Block strings are not supported" + var_fc8642f1 + "Dev Block strings are not supported" + var_2741876d + "Dev Block strings are not supported");
 		}
@@ -397,7 +397,7 @@ function private bgb_set_debug_text(name, var_2741876d)
 			self.var_94ee23e0 setText("Dev Block strings are not supported" + var_fc8642f1);
 		}
 		wait(1);
-		if("Dev Block strings are not supported" == name)
+		if ("Dev Block strings are not supported" == name)
 		{
 			self.var_94ee23e0 fadeOverTime(1);
 			self.var_94ee23e0.alpha = 0;
@@ -500,13 +500,13 @@ function get_bgb_available(bgb)
 */
 function private function_c3e0b2ba(bgb, activating)
 {
-	if(!(isdefined(level.bgb[bgb].var_7ca0e2a7) && level.bgb[bgb].var_7ca0e2a7))
+	if (!(IsDefined(level.bgb[bgb].var_7ca0e2a7) && level.bgb[bgb].var_7ca0e2a7))
 	{
 		return;
 	}
 	var_b0106e56 = self EnableInvulnerability();
 	self util::waittill_any_timeout(2, "bgb_bubble_blow_complete");
-	if(isdefined(self) && (!isdefined(var_b0106e56) && var_b0106e56))
+	if (IsDefined(self) && (!IsDefined(var_b0106e56) && var_b0106e56))
 	{
 		self DisableInvulnerability();
 	}
@@ -545,9 +545,9 @@ function bgb_gumball_anim(bgb, activating)
 	if (evt == "weapon_change_complete")
 	{
 		succeeded = true;
-		if(activating)
+		if (activating)
 		{
-			if(isdefined(level.bgb[bgb].var_7ea552f4) && level.bgb[bgb].var_7ea552f4 || self function_b616fe7a(1))
+			if (IsDefined(level.bgb[bgb].var_7ea552f4) && level.bgb[bgb].var_7ea552f4 || self function_b616fe7a(1))
 			{
 				self notify("hash_83da9d01", bgb);
 				self activation_start();
@@ -569,7 +569,7 @@ function bgb_gumball_anim(bgb, activating)
 		self zm_stats::increment_challenge_stat("GUM_GOBBLER_CONSUME");
 		self AddDStat("ItemStats", level.bgb[bgb].item_index, "stats", "used", "statValue", 1);
 		health = 0;
-		if(isdefined(self.health))
+		if (IsDefined(self.health))
 		{
 			health = self.health;
 		}
@@ -643,7 +643,7 @@ function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
 
 	weapon = bgb_get_gumball_anim_weapon(bgb, activating);
 
-	if (self laststand::player_is_in_laststand() || (isdefined(self.intermission) && self.intermission))
+	if (self laststand::player_is_in_laststand() || (IsDefined(self.intermission) && self.intermission))
 	{
 		self TakeWeapon(weapon);
 		return;
@@ -659,7 +659,7 @@ function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
 	else if (var_e3d21ca6 != level.weaponNone && !zm_utility::is_placeable_mine(var_e3d21ca6) && !zm_equipment::is_equipment_that_blocks_purchase(var_e3d21ca6))
 	{
 		self zm_weapons::switch_back_primary_weapon(var_e3d21ca6);
-		if(zm_utility::is_melee_weapon(var_e3d21ca6))
+		if (zm_utility::is_melee_weapon(var_e3d21ca6))
 		{
 			self zm_utility::decrement_is_drinking();
 			return;
@@ -672,7 +672,7 @@ function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
 
 	self util::waittill_any_timeout(1, "weapon_change_complete");
 
-	if (!self laststand::player_is_in_laststand() && (!isdefined(self.intermission) && self.intermission))
+	if (!self laststand::player_is_in_laststand() && (!IsDefined(self.intermission) && self.intermission))
 	{
 		self zm_utility::decrement_is_drinking();
 	}
@@ -707,7 +707,7 @@ function private bgb_limit_monitor()
 			for (i = level.bgb[self.bgb].limit; i > 0; i--)
 			{
 				level.bgb[self.bgb].var_32fa3cb7 = i;
-				if(level.bgb[self.bgb].var_336ffc4e)
+				if (level.bgb[self.bgb].var_336ffc4e)
 				{
 					function_497386b0();
 				}
@@ -833,16 +833,16 @@ function private bgb_activation_monitor()
 */
 function private function_b616fe7a(var_5827b083)
 {
-	if(!isdefined(var_5827b083))
+	if (!IsDefined(var_5827b083))
 	{
 		var_5827b083 = 0;
 	}
-	var_bb1d9487 = isdefined(level.bgb[self.bgb].validation_func) && !self [[level.bgb[self.bgb].validation_func]]();
-	var_847ec8da = isdefined(level.var_9cef605e) && !self [[level.var_9cef605e]]();
-	if(!var_5827b083 && (isdefined(self.IS_DRINKING) && self.IS_DRINKING) || (isdefined(self.bgb_activation_in_progress) && self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
+	var_bb1d9487 = IsDefined(level.bgb[self.bgb].validation_func) && !self [[level.bgb[self.bgb].validation_func]]();
+	var_847ec8da = IsDefined(level.var_9cef605e) && !self [[level.var_9cef605e]]();
+	if (!var_5827b083 && (IsDefined(self.IS_DRINKING) && self.IS_DRINKING) || (IsDefined(self.bgb_activation_in_progress) && self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
 	{
 		self clientfield::increment_uimodel("bgb_invalid_use");
-		self playlocalsound("zmb_bgb_deny_plr");
+		self PlayLocalSound("zmb_bgb_deny_plr");
 		return 0;
 	}
 	return 1;
@@ -862,7 +862,7 @@ function private function_5fc6d844(bgb)
 	self endon("disconnect");
 	self endon("bled_out");
 	self endon("bgb_update");
-	if(isdefined(level.bgb[bgb].var_50fe45f6) && level.bgb[bgb].var_50fe45f6)
+	if (IsDefined(level.bgb[bgb].var_50fe45f6) && level.bgb[bgb].var_50fe45f6)
 	{
 		function_650ca64(6);
 	}
@@ -928,12 +928,12 @@ function function_336ffc4e(name)
 */
 function do_one_shot_use(skip_demo_bookmark)
 {
-	if(!isdefined(skip_demo_bookmark))
+	if (!IsDefined(skip_demo_bookmark))
 	{
 		skip_demo_bookmark = 0;
 	}
 	self clientfield::increment_uimodel("bgb_one_shot_use");
-	if(!skip_demo_bookmark)
+	if (!skip_demo_bookmark)
 	{
 		demo::bookmark("zm_player_bgb_activate", GetTime(), self);
 	}
@@ -993,7 +993,7 @@ function private set_active(b_active)
 */
 function get_active()
 {
-	return isdefined(self.bgb_active) && self.bgb_active;
+	return IsDefined(self.bgb_active) && self.bgb_active;
 }
 
 /*
@@ -1007,11 +1007,11 @@ function get_active()
 */
 function is_active(name)
 {
-	if(!isdefined(self.bgb))
+	if (!IsDefined(self.bgb))
 	{
 		return 0;
 	}
-	return self.bgb == name && (isdefined(self.bgb_active) && self.bgb_active);
+	return self.bgb == name && (IsDefined(self.bgb_active) && self.bgb_active);
 }
 
 /*
@@ -1027,7 +1027,7 @@ function is_team_active(name)
 {
 	foreach(player in level.players)
 	{
-		if(player is_active(name))
+		if (player is_active(name))
 		{
 			return 1;
 		}
@@ -1046,7 +1046,7 @@ function is_team_active(name)
 */
 function increment_ref_count(name)
 {
-	if(!isdefined(level.bgb[name]))
+	if (!IsDefined(level.bgb[name]))
 	{
 		return 0;
 	}
@@ -1066,7 +1066,7 @@ function increment_ref_count(name)
 */
 function decrement_ref_count(name)
 {
-	if(!isdefined(level.bgb[name]))
+	if (!IsDefined(level.bgb[name]))
 	{
 		return 0;
 	}
@@ -1085,7 +1085,7 @@ function decrement_ref_count(name)
 */
 function private calc_remaining_duration_lerp(start_time, end_time)
 {
-	if(0 >= end_time - start_time)
+	if (0 >= end_time - start_time)
 	{
 		return 0;
 	}
@@ -1122,7 +1122,7 @@ function private bgb_set_timer_clientfield(percent)
 {
 	self notify("hash_f9fad8b3");
 	var_eeab9300 = self clientfield::get_player_uimodel("bgb_timer");
-	if(percent < var_eeab9300 && 0.1 <= var_eeab9300 - percent)
+	if (percent < var_eeab9300 && 0.1 <= var_eeab9300 - percent)
 	{
 		self thread function_f9fad8b3(var_eeab9300, percent);
 	}
@@ -1160,25 +1160,19 @@ function set_timer(current, max)
 	self bgb_set_timer_clientfield(current / max);
 }
 
-/*
-	Name: run_timer
-	Namespace: bgb
-	Checksum: 0x57C0F587
-	Offset: 0x3630
-	Size: 0x9B
-	Parameters: 1
-	Flags: None
-*/
 function run_timer(max)
 {
 	self endon("disconnect");
-	self notify("hash_40cdac02");
-	self endon("hash_40cdac02");
+
+	self notify("bgb_run_timer");
+	self endon("bgb_run_timer");
+
 	for (current = max; current > 0; current -= SERVER_FRAME)
 	{
 		self set_timer(current, max);
 		WAIT_SERVER_FRAME;
 	}
+
 	self clear_timer();
 }
 
@@ -1194,7 +1188,7 @@ function run_timer(max)
 function clear_timer()
 {
 	self bgb_set_timer_clientfield(0);
-	self notify("hash_40cdac02");
+	self notify("bgb_run_timer");
 }
 
 /*
@@ -1209,61 +1203,58 @@ function clear_timer()
 function register(name, limit_type, limit, enable_func, disable_func, validation_func, activation_func)
 {
 	/#
-		Assert(isdefined(name), "Dev Block strings are not supported");
+		Assert(IsDefined(name), "Dev Block strings are not supported");
 	#/
 	/#
 		Assert("Dev Block strings are not supported" != name, "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
 	#/
 	/#
-		Assert(!isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(!IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+	#/
+
+	/#
+		Assert(IsDefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	/#
-		Assert(isdefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+	#/
+
+	/#
+		Assert(!IsDefined(enable_func) || IsFunctionPtr(enable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	/#
-		Assert(isdefined(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(!IsDefined(disable_func) || IsFunctionPtr(disable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
-	/#
-		Assert(!isdefined(enable_func) || IsFunctionPtr(enable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
-	/#
-		Assert(!isdefined(disable_func) || IsFunctionPtr(disable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+
 	switch(limit_type)
 	{
 		case "activated":
-		{
 			/#
-				Assert(!isdefined(validation_func) || IsFunctionPtr(validation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
+				Assert(!IsDefined(validation_func) || IsFunctionPtr(validation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
 			/#
-				Assert(isdefined(activation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
+				Assert(IsDefined(activation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
 			/#
 				Assert(IsFunctionPtr(activation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
-		}
 		case "rounds":
 		case "time":
-		{
 			/#
 				Assert(IsInt(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
 			break;
-		}
+		
 		case "event":
-		{
 			/#
 				Assert(IsFunctionPtr(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
 			break;
-		}
+
 		default:
-		{
 			/#
 				Assert(false, "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
-		}
 	}
 	level.bgb[name] = spawnstruct();
 	level.bgb[name].name = name;
@@ -1271,7 +1262,7 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 	level.bgb[name].limit = limit;
 	level.bgb[name].enable_func = enable_func;
 	level.bgb[name].disable_func = disable_func;
-	if("activated" == limit_type)
+	if ("activated" == limit_type)
 	{
 		level.bgb[name].validation_func = validation_func;
 		level.bgb[name].activation_func = activation_func;
@@ -1280,91 +1271,46 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 	level.bgb[name].ref_count = 0;
 }
 
-/*
-	Name: function_3422638b
-	Namespace: bgb
-	Checksum: 0xB600CE11
-	Offset: 0x3C48
-	Size: 0x67
-	Parameters: 2
-	Flags: None
-*/
 function register_actor_damage_override(name, actor_damage_override_func)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].actor_damage_override_func = actor_damage_override_func;
 }
 
-/*
-	Name: function_e22c6124
-	Namespace: bgb
-	Checksum: 0x28F077E3
-	Offset: 0x3CB8
-	Size: 0x67
-	Parameters: 2
-	Flags: None
-*/
 function register_vehicle_damage_override(name, vehicle_damage_override_func)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].vehicle_damage_override_func = vehicle_damage_override_func;
 }
 
-/*
-	Name: function_2b341a2e
-	Namespace: bgb
-	Checksum: 0xB5137758
-	Offset: 0x3D28
-	Size: 0x67
-	Parameters: 2
-	Flags: None
-*/
 function register_actor_death_override(name, actor_death_override_func)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].actor_death_override_func = actor_death_override_func;
 }
 
-/*
-	Name: register_lost_perk_override
-	Namespace: bgb
-	Checksum: 0x75A50890
-	Offset: 0x3D98
-	Size: 0x8B
-	Parameters: 3
-	Flags: None
-*/
 function register_lost_perk_override(name, lost_perk_override_func, lost_perk_override_func_always_run)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].lost_perk_override_func = lost_perk_override_func;
 	level.bgb[name].lost_perk_override_func_always_run = lost_perk_override_func_always_run;
 }
 
-/*
-	Name: function_ff4b2998
-	Namespace: bgb
-	Checksum: 0xCD6631BB
-	Offset: 0x3E30
-	Size: 0x8B
-	Parameters: 3
-	Flags: None
-*/
-function register_add_to_player_score_override(name, add_to_player_score_override_func, var_cdcc8fcd)
+function register_add_to_player_score_override(name, add_to_player_score_override_func, add_to_player_score_override_func_always_run)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].add_to_player_score_override_func = add_to_player_score_override_func;
-	level.bgb[name].var_cdcc8fcd = var_cdcc8fcd;
+	level.bgb[name].add_to_player_score_override_func_always_run = add_to_player_score_override_func_always_run;
 }
 
 /*
@@ -1379,7 +1325,7 @@ function register_add_to_player_score_override(name, add_to_player_score_overrid
 function function_4cda71bf(name, var_7ca0e2a7)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].var_7ca0e2a7 = var_7ca0e2a7;
 }
@@ -1396,7 +1342,7 @@ function function_4cda71bf(name, var_7ca0e2a7)
 function function_93da425(name, var_35e23ba2)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].var_35e23ba2 = var_35e23ba2;
 }
@@ -1413,7 +1359,7 @@ function function_93da425(name, var_35e23ba2)
 function function_2060b89(name)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].var_50fe45f6 = 1;
 }
@@ -1430,7 +1376,7 @@ function function_2060b89(name)
 function function_f132da9c(name)
 {
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	level.bgb[name].var_7ea552f4 = 1;
 }
@@ -1447,7 +1393,7 @@ function function_f132da9c(name)
 function function_d35f60a1(name)
 {
 	unlocked = function_64f7cbc3();
-	if(unlocked)
+	if (unlocked)
 	{
 		self give(name);
 	}
@@ -1465,23 +1411,23 @@ function function_d35f60a1(name)
 function give(name)
 {
 	self thread take();
-	if("none" == name)
+	if ("none" == name)
 	{
 		return;
 	}
 	/#
-		Assert(isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
 	self notify("bgb_update", name, self.bgb);
 	self notify("bgb_update_give_" + name);
 	self.bgb = name;
 	self clientfield::set_player_uimodel("bgb_current", level.bgb[name].item_index);
 	self LUINotifyEvent(&"zombie_bgb_notification", 1, level.bgb[name].item_index);
-	if(isdefined(level.bgb[name].enable_func))
+	if (IsDefined(level.bgb[name].enable_func))
 	{
 		self thread [[level.bgb[name].enable_func]]();
 	}
-	if(isdefined("activated" == level.bgb[name].limit_type))
+	if (IsDefined("activated" == level.bgb[name].limit_type))
 	{
 		self SetActionSlot(1, "bgb");
 	}
@@ -1500,13 +1446,13 @@ function give(name)
 */
 function take()
 {
-	if("none" == self.bgb)
+	if ("none" == self.bgb)
 	{
 		return;
 	}
 	self SetActionSlot(1, "");
 	self thread bgb_set_debug_text("none");
-	if(isdefined(level.bgb[self.bgb].disable_func))
+	if (IsDefined(level.bgb[self.bgb].disable_func))
 	{
 		self thread [[level.bgb[self.bgb].disable_func]]();
 	}
@@ -1516,71 +1462,35 @@ function take()
 	self.bgb = "none";
 }
 
-/*
-	Name: function_51fc7e9d
-	Namespace: bgb
-	Checksum: 0xBAEC966
-	Offset: 0x43A0
-	Size: 0x9
-	Parameters: 0
-	Flags: None
-*/
 function get_enabled()
 {
 	return self.bgb;
 }
 
-/*
-	Name: is_enabled
-	Namespace: bgb
-	Checksum: 0x369A99AA
-	Offset: 0x43B8
-	Size: 0x37
-	Parameters: 1
-	Flags: None
-*/
 function is_enabled(name)
 {
 	/#
-		Assert(isdefined(self.bgb));
+		Assert(IsDefined(self.bgb));
 	#/
 	return self.bgb == name;
 }
 
-/*
-	Name: function_58be9c43
-	Namespace: bgb
-	Checksum: 0x4A6FEAAC
-	Offset: 0x43F8
-	Size: 0x33
-	Parameters: 0
-	Flags: None
-*/
 function any_enabled()
 {
 	/#
-		Assert(isdefined(self.bgb));
+		Assert(IsDefined(self.bgb));
 	#/
 	return self.bgb !== "none";
 }
 
-/*
-	Name: is_team_enabled
-	Namespace: bgb
-	Checksum: 0xDD73CECB
-	Offset: 0x4438
-	Size: 0xC1
-	Parameters: 1
-	Flags: None
-*/
 function is_team_enabled(str_name)
 {
-	foreach(player in level.players)
+	foreach (player in level.players)
 	{
 		/#
-			Assert(isdefined(player.bgb));
+			Assert(IsDefined(player.bgb));
 		#/
-		if(player.bgb == str_name)
+		if (player.bgb == str_name)
 		{
 			return 1;
 		}
@@ -1615,15 +1525,15 @@ function function_c219b050()
 */
 function function_dea74fb0(str_powerup, v_origin)
 {
-	if(!isdefined(v_origin))
+	if (!IsDefined(v_origin))
 	{
 		v_origin = self function_c219b050();
 	}
-	var_93eb638b = zm_powerups::specific_powerup_drop(str_powerup, v_origin);
+	e_powerup = zm_powerups::specific_powerup_drop(str_powerup, v_origin);
 	wait(1);
-	if(isdefined(var_93eb638b) && (!var_93eb638b zm::in_enabled_playable_area() && !var_93eb638b zm::in_life_brush()))
+	if (IsDefined(e_powerup) && (!e_powerup zm::in_enabled_playable_area() && !e_powerup zm::in_life_brush()))
 	{
-		level thread function_434235f9(var_93eb638b);
+		level thread function_434235f9(e_powerup);
 	}
 }
 
@@ -1636,214 +1546,182 @@ function function_dea74fb0(str_powerup, v_origin)
 	Parameters: 1
 	Flags: None
 */
-function function_434235f9(var_93eb638b)
+function function_434235f9(e_powerup)
 {
-	if(!isdefined(var_93eb638b))
+	if (!IsDefined(e_powerup))
 	{
 		return;
 	}
-	var_93eb638b ghost();
-	var_93eb638b.clone_model = util::spawn_model(var_93eb638b.model, var_93eb638b.origin, var_93eb638b.angles);
-	var_93eb638b.clone_model LinkTo(var_93eb638b);
-	direction = var_93eb638b.origin;
+	e_powerup ghost();
+	e_powerup.clone_model = util::spawn_model(e_powerup.model, e_powerup.origin, e_powerup.angles);
+	e_powerup.clone_model LinkTo(e_powerup);
+	direction = e_powerup.origin;
 	direction = (direction[1], direction[0], 0);
-	if(direction[1] < 0 || (direction[0] > 0 && direction[1] > 0))
+	if (direction[1] < 0 || (direction[0] > 0 && direction[1] > 0))
 	{
 		direction = (direction[0], direction[1] * -1, 0);
 	}
-	else if(direction[0] < 0)
+	else if (direction[0] < 0)
 	{
 		direction = (direction[0] * -1, direction[1], 0);
 	}
-	if(!(isdefined(var_93eb638b.sndNoSamLaugh) && var_93eb638b.sndNoSamLaugh))
+	if (!IS_TRUE(e_powerup.sndNoSamLaugh))
 	{
 		players = GetPlayers();
-		for(i = 0; i < players.size; i++)
+		for (i = 0; i < players.size; i++)
 		{
-			if(isalive(players[i]))
+			if (IsAlive(players[i]))
 			{
-				players[i] playlocalsound(level.zmb_laugh_alias);
+				players[i] PlayLocalSound(level.zmb_laugh_alias);
 			}
 		}
 	}
-	PlayFXOnTag(level._effect["samantha_steal"], var_93eb638b, "tag_origin");
-	var_93eb638b.clone_model Unlink();
-	var_93eb638b.clone_model MoveZ(60, 1, 0.25, 0.25);
-	var_93eb638b.clone_model vibrate(direction, 1.5, 2.5, 1);
-	var_93eb638b.clone_model waittill("movedone");
-	if(isdefined(self.damagearea))
+	PlayFXOnTag(level._effect["samantha_steal"], e_powerup, "tag_origin");
+	e_powerup.clone_model Unlink();
+	e_powerup.clone_model MoveZ(60, 1, 0.25, 0.25);
+	e_powerup.clone_model vibrate(direction, 1.5, 2.5, 1);
+	e_powerup.clone_model waittill("movedone");
+	if (IsDefined(self.damagearea))
 	{
 		self.damagearea delete();
 	}
-	var_93eb638b.clone_model delete();
-	if(isdefined(var_93eb638b))
+	e_powerup.clone_model delete();
+	if (IsDefined(e_powerup))
 	{
-		if(isdefined(var_93eb638b.damagearea))
+		if (IsDefined(e_powerup.damagearea))
 		{
-			var_93eb638b.damagearea delete();
+			e_powerup.damagearea delete();
 		}
-		var_93eb638b zm_powerups::powerup_delete();
+		e_powerup zm_powerups::powerup_delete();
 	}
 }
 
-/*
-	Name: actor_damage_override
-	Namespace: bgb
-	Checksum: 0x2EA7AF6E
-	Offset: 0x49F0
-	Size: 0x14F
-	Parameters: 12
-	Flags: None
-*/
 function actor_damage_override(inflictor, attacker, damage, flags, meansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime, boneIndex, surfaceType)
 {
-	if(!IS_TRUE(level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return damage;
 	}
-	if(isPlayer(attacker))
+
+	if (IsPlayer(attacker))
 	{
-		name = attacker get_enabled();
-		if(name !== "none" && isdefined(level.bgb[name]) && isdefined(level.bgb[name].actor_damage_override_func))
+		name = attacker get_enabled(); // get the name of the attacking player's bgb
+
+		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_damage_override_func))
 		{
-			damage = [[level.bgb[name].actor_damage_override_func]](inflictor, attacker, damage, flags, meansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime, boneIndex, surfaceType);
+			damage = [[ level.bgb[name].actor_damage_override_func ]](inflictor, attacker, damage, flags, meansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime, boneIndex, surfaceType);
 		}
 	}
 	return damage;
 }
 
-/*
-	Name: vehicle_damage_override
-	Namespace: bgb
-	Checksum: 0x8CCDAA93
-	Offset: 0x4B48
-	Size: 0x173
-	Parameters: 15
-	Flags: None
-*/
 function vehicle_damage_override(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, vDamageOrigin, psOffsetTime, damageFromUnderneath, modelIndex, partName, vSurfaceNormal)
 {
-	if(!IS_TRUE(level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return iDamage;
 	}
-	if(isPlayer(eAttacker))
+
+	if (IsPlayer(eAttacker))
 	{
-		name = eAttacker get_enabled();
-		if(name !== "none" && isdefined(level.bgb[name]) && isdefined(level.bgb[name].vehicle_damage_override_func))
+		name = eAttacker get_enabled(); // get the name of the attacking player's bgb
+
+		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].vehicle_damage_override_func))
 		{
-			iDamage = [[level.bgb[name].vehicle_damage_override_func]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, vDamageOrigin, psOffsetTime, damageFromUnderneath, modelIndex, partName, vSurfaceNormal);
+			iDamage = [[ level.bgb[name].vehicle_damage_override_func ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, vDamageOrigin, psOffsetTime, damageFromUnderneath, modelIndex, partName, vSurfaceNormal);
 		}
 	}
 	return iDamage;
 }
 
-/*
-	Name: actor_death_override
-	Namespace: bgb
-	Checksum: 0xD80802EA
-	Offset: 0x4CC8
-	Size: 0xD3
-	Parameters: 1
-	Flags: None
-*/
 function actor_death_override(attacker)
 {
-	if(!IS_TRUE(level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return 0;
 	}
-	if(isPlayer(attacker))
+
+	if (IsPlayer(attacker))
 	{
 		name = attacker get_enabled();
-		if(name !== "none" && isdefined(level.bgb[name]) && isdefined(level.bgb[name].actor_death_override_func))
+		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_death_override_func))
 		{
-			damage = [[level.bgb[name].actor_death_override_func]](attacker);
+			damage = [[ level.bgb[name].actor_death_override_func ]](attacker);
 		}
 	}
 	return damage;
 }
 
-/*
-	Name: lost_perk_override
-	Namespace: bgb
-	Checksum: 0x3E1114E7
-	Offset: 0x4DA8
-	Size: 0x253
-	Parameters: 1
-	Flags: None
-*/
 function lost_perk_override(perk)
 {
-	b_result = 0;
-	if(!IS_TRUE(level.bgb_in_use))
+	b_result = false; // by default, won't interfere with normal loss of the perk
+
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return b_result;
 	}
-	if(!(isdefined(self.laststand) && self.laststand))
+	if (!IS_TRUE(self.laststand))
 	{
 		return b_result;
 	}
-	keys = getArrayKeys(level.bgb);
-	for(i = 0; i < keys.size; i++)
+
+	keys = GetArrayKeys(level.bgb);
+	for (i = 0; i < keys.size; i++)
 	{
 		name = keys[i];
-		if(isdefined(level.bgb[name].lost_perk_override_func_always_run) && level.bgb[name].lost_perk_override_func_always_run && isdefined(level.bgb[name].lost_perk_override_func))
+		if (IS_TRUE(level.bgb[name].lost_perk_override_func_always_run) && IsDefined(level.bgb[name].lost_perk_override_func))
 		{
-			b_result = [[level.bgb[name].lost_perk_override_func]](perk, self, undefined);
-			if(b_result)
+			b_result = [[ level.bgb[name].lost_perk_override_func ]](perk, self, undefined);
+			if (b_result)
 			{
 				return b_result;
 			}
 		}
 	}
-	foreach(player in level.activePlayers)
+
+	foreach (player in level.activePlayers)
 	{
-		name = player get_enabled();
-		if(name !== "none" && isdefined(level.bgb[name]) && isdefined(level.bgb[name].lost_perk_override_func))
+		name = player get_enabled(); // get the name of the player's bgb
+
+		// if there's a lost perk override func associated with the player's bgb, call it, allowing it to prevent loss of the perk if desired
+		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].lost_perk_override_func))
 		{
-			b_result = [[level.bgb[name].lost_perk_override_func]](perk, self, player);
-			if(b_result)
+			b_result = [[ level.bgb[name].lost_perk_override_func ]](perk, self, player);
+			if (b_result)
 			{
 				return b_result;
 			}
 		}
 	}
+
 	return b_result;
 }
 
-/*
-	Name: add_to_player_score_override
-	Namespace: bgb
-	Checksum: 0xFC6E925F
-	Offset: 0x5008
-	Size: 0x1C3
-	Parameters: 2
-	Flags: None
-*/
 function add_to_player_score_override(n_points, str_awarded_by)
 {
-	if(!IS_TRUE(level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return n_points;
 	}
-	var_8b4008d0 = self get_enabled();
-	keys = getArrayKeys(level.bgb);
-	for(i = 0; i < keys.size; i++)
+
+	str_enabled = self get_enabled(); // get the name of the attacking player's bgb
+
+	keys = GetArrayKeys(level.bgb);
+	for (i = 0; i < keys.size; i++)
 	{
-		var_23359ff6 = keys[i];
-		if(var_23359ff6 === var_8b4008d0)
+		str_bgb = keys[i];
+		if (str_bgb === str_enabled)
 		{
 			continue;
 		}
-		if(isdefined(level.bgb[var_23359ff6].var_cdcc8fcd) && level.bgb[var_23359ff6].var_cdcc8fcd && isdefined(level.bgb[var_23359ff6].add_to_player_score_override_func))
+		if (IS_TRUE(level.bgb[str_bgb].add_to_player_score_override_func_always_run) && IsDefined(level.bgb[str_bgb].add_to_player_score_override_func))
 		{
-			n_points = [[level.bgb[var_23359ff6].add_to_player_score_override_func]](n_points, str_awarded_by, 0);
+			n_points = [[ level.bgb[str_bgb].add_to_player_score_override_func ]](n_points, str_awarded_by, 0);
 		}
 	}
-	if(var_8b4008d0 !== "none" && isdefined(level.bgb[var_8b4008d0]) && isdefined(level.bgb[var_8b4008d0].add_to_player_score_override_func))
+	if (str_enabled !== "none" && IsDefined(level.bgb[str_enabled]) && IsDefined(level.bgb[str_enabled].add_to_player_score_override_func))
 	{
-		n_points = [[level.bgb[var_8b4008d0].add_to_player_score_override_func]](n_points, str_awarded_by, 1);
+		n_points = [[ level.bgb[str_enabled].add_to_player_score_override_func ]](n_points, str_awarded_by, 1);
 	}
 	return n_points;
 }
@@ -1859,14 +1737,14 @@ function add_to_player_score_override(n_points, str_awarded_by)
 */
 function function_d51db887()
 {
-	keys = Array::randomize(getArrayKeys(level.bgb));
+	keys = array::randomize(GetArrayKeys(level.bgb));
 	for(i = 0; i < keys.size; i++)
 	{
-		if(level.bgb[keys[i]].rarity != 1)
+		if (level.bgb[keys[i]].rarity != 1)
 		{
 			continue;
 		}
-		if(level.bgb[keys[i]].dlc_index > 0)
+		if (level.bgb[keys[i]].dlc_index > 0)
 		{
 			continue;
 		}
@@ -1893,26 +1771,26 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 	{
 		foreach(e_player in level.players)
 		{
-			if(e_player == self)
+			if (e_player == self)
 			{
 				continue;
 			}
-			Array::remove_undefined(self.var_6638f10b);
-			var_368e2240 = Array::contains(self.var_6638f10b, e_player);
+			array::remove_undefined(self.var_6638f10b);
+			var_368e2240 = array::contains(self.var_6638f10b, e_player);
 			var_50fd5a04 = zm_utility::is_player_valid(e_player, 0, 1) && function_2469cfe8(n_max_distance, self, e_player);
-			if(!var_368e2240 && var_50fd5a04)
+			if (!var_368e2240 && var_50fd5a04)
 			{
-				Array::add(self.var_6638f10b, e_player, 0);
-				if(isdefined(var_98a3e738))
+				array::add(self.var_6638f10b, e_player, 0);
+				if (IsDefined(var_98a3e738))
 				{
 					self thread [[var_98a3e738]](e_player);
 				}
 				continue;
 			}
-			if(var_368e2240 && !var_50fd5a04)
+			if (var_368e2240 && !var_50fd5a04)
 			{
 				ArrayRemoveValue(self.var_6638f10b, e_player);
-				if(isdefined(var_287a7adb))
+				if (IsDefined(var_287a7adb))
 				{
 					self thread [[var_287a7adb]](e_player);
 				}
@@ -1935,7 +1813,7 @@ function private function_2469cfe8(n_distance, var_d21815c4, var_441f84ff)
 {
 	var_31dc18aa = n_distance * n_distance;
 	var_2931dc75 = DistanceSquared(var_d21815c4.origin, var_441f84ff.origin);
-	if(var_2931dc75 <= var_31dc18aa)
+	if (var_2931dc75 <= var_31dc18aa)
 	{
 		return 1;
 	}
@@ -1954,7 +1832,7 @@ function private function_2469cfe8(n_distance, var_d21815c4, var_441f84ff)
 function function_ca189700()
 {
 	self clientfield::increment_uimodel("bgb_invalid_use");
-	self playlocalsound("zmb_bgb_deny_plr");
+	self PlayLocalSound("zmb_bgb_deny_plr");
 }
 
 /*
@@ -1996,7 +1874,7 @@ function resume_weapon_cycling()
 */
 function init_weapon_cycling()
 {
-	if(!self flag::exists("bgb_weapon_cycling"))
+	if (!self flag::exists("bgb_weapon_cycling"))
 	{
 		self flag::init("bgb_weapon_cycling");
 	}
@@ -2017,35 +1895,26 @@ function function_378bff5d()
 	self flag::wait_till("bgb_weapon_cycling");
 }
 
-/*
-	Name: function_41ed378b
-	Namespace: bgb
-	Checksum: 0x8ADBAAE7
-	Offset: 0x5698
-	Size: 0x1A3
-	Parameters: 1
-	Flags: None
-*/
 function function_41ed378b(perk)
 {
 	self notify("revive_and_return_perk_on_bgb_activation" + perk);
 	self endon("revive_and_return_perk_on_bgb_activation" + perk);
 	self endon("disconnect");
 	self endon("bled_out");
-	if(perk == "specialty_widowswine")
+	if (perk == "specialty_widowswine")
 	{
 		var_376ad33c = self GetWeaponAmmoClip(self.current_lethal_grenade);
 	}
 	self waittill("player_revived", e_reviver);
-	if(isdefined(self.var_df0decf1) && self.var_df0decf1 || (isdefined(e_reviver) && (isdefined(self.bgb) && self is_enabled("zm_bgb_near_death_experience")) || (isdefined(e_reviver.bgb) && e_reviver is_enabled("zm_bgb_near_death_experience"))))
+	if (IS_TRUE(self.var_df0decf1) || (IsDefined(e_reviver) && (IsDefined(self.bgb) && self is_enabled("zm_bgb_near_death_experience")) || (IsDefined(e_reviver.bgb) && e_reviver is_enabled("zm_bgb_near_death_experience"))))
 	{
-		if(zm_perks::use_solo_revive() && perk == "specialty_quickrevive")
+		if (zm_perks::use_solo_revive() && perk == "specialty_quickrevive")
 		{
 			level.solo_game_free_player_quickrevive = 1;
 		}
 		WAIT_SERVER_FRAME;
-		self thread zm_perks::give_perk(perk, 0);
-		if(perk == "specialty_widowswine" && isdefined(var_376ad33c))
+		self thread zm_perks::give_perk(perk, false);
+		if (perk == "specialty_widowswine" && IsDefined(var_376ad33c))
 		{
 			self SetWeaponAmmoClip(self.current_lethal_grenade, var_376ad33c);
 		}
@@ -2065,10 +1934,10 @@ function function_7d63d2eb()
 {
 	self endon("disconnect");
 	self endon("death");
-	self.var_df0decf1 = 1;
+	self.var_df0decf1 = true;
 	self waittill("player_revived", e_reviver);
 	WAIT_SERVER_FRAME;
-	if(isdefined(self.var_df0decf1) && self.var_df0decf1)
+	if (IS_TRUE(self.var_df0decf1))
 	{
 		self notify("bgb_revive");
 		self.var_df0decf1 = undefined;
