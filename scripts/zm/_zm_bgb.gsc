@@ -179,20 +179,20 @@ function private bgb_finalize()
 {
 	statsTableName = util::getStatsTableName();
 	keys = GetArrayKeys(level.bgb);
-	for(i = 0; i < keys.size; i++)
+	for (i = 0; i < keys.size; i++)
 	{
 		level.bgb[keys[i]].item_index = GetItemIndexFromRef(keys[i]);
-		level.bgb[keys[i]].rarity = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
-		if (0 == level.bgb[keys[i]].rarity || 4 == level.bgb[keys[i]].rarity)
+		level.bgb[keys[i]].rarity = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
+		if (level.bgb[keys[i]].rarity == BGB_RARITY_CLASSIC_INDEX || level.bgb[keys[i]].rarity == BGB_RARITY_WHIMSICAL_INDEX)
 		{
-			level.bgb[keys[i]].consumable = 0;
+			level.bgb[keys[i]].consumable = false;
 		}
 		else
 		{
-			level.bgb[keys[i]].consumable = 1;
+			level.bgb[keys[i]].consumable = true;
 		}
-		level.bgb[keys[i]].camo_index = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
-		var_cf65a2c0 = tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 15);
+		level.bgb[keys[i]].camo_index = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
+		var_cf65a2c0 = TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 15);
 		if (IsSubStr(var_cf65a2c0, "dlc"))
 		{
 			level.bgb[keys[i]].dlc_index = Int(var_cf65a2c0[3]);
@@ -243,7 +243,7 @@ function private setup_devgui()
 		}
 		AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
 		AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
-		for(i = 0; i < 4; i++)
+		for (i = 0; i < 4; i++)
 		{
 			playerNum = i + 1;
 			AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + playerNum + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + i + "Dev Block strings are not supported");
@@ -291,7 +291,7 @@ function private function_dea9a9da(var_a961d470)
 	/#
 		var_a7032a9 = GetDvarInt("Dev Block strings are not supported");
 		players = GetPlayers();
-		for(i = 0; i < players.size; i++)
+		for (i = 0; i < players.size; i++)
 		{
 			if (var_a7032a9 != -1 && var_a7032a9 != i)
 			{
@@ -427,18 +427,24 @@ function function_66a597c1(bgb)
 	{
 		return;
 	}
+
 	if (IsDefined(level.bgb[bgb].var_35e23ba2) && ![[level.bgb[bgb].var_35e23ba2]]())
 	{
 		return;
 	}
+
 	self.bgb_stats[bgb].bgb_used_this_game++;
+
 	self flag::set("used_consumable");
 	zm_utility::increment_zm_dash_counter("consumables_used", 1);
+
 	if (level flag::exists("first_consumables_used"))
 	{
 		level flag::set("first_consumables_used");
 	}
+
 	self LUINotifyEvent(&"zombie_bgb_used", 1, level.bgb[bgb].item_index);
+
 	/#
 		function_47db72b6(bgb);
 	#/
@@ -453,7 +459,7 @@ function get_bgb_available(bgb)
 	var_3232aae6 = self.bgb_stats[bgb].var_e0b06b47;
 	var_8e01583 = self.bgb_stats[bgb].bgb_used_this_game;
 	var_c6b3f8bc = var_3232aae6 - var_8e01583;
-	return 0 < var_c6b3f8bc;
+	return var_c6b3f8bc > 0;
 }
 
 /*
@@ -503,6 +509,7 @@ function bgb_gumball_anim(bgb, activating)
 	if (evt == "weapon_change_complete")
 	{
 		succeeded = true;
+
 		if (activating)
 		{
 			if (IS_TRUE(level.bgb[bgb].var_7ea552f4) || self function_b616fe7a(true))
@@ -520,19 +527,24 @@ function bgb_gumball_anim(bgb, activating)
 		{
 			return false;
 		}
+
 		self notify("hash_fcbbef99", bgb);
 		self thread give(bgb);
+
 		self zm_stats::increment_client_stat("bgbs_chewed");
 		self zm_stats::increment_player_stat("bgbs_chewed");
 		self zm_stats::increment_challenge_stat("GUM_GOBBLER_CONSUME");
 		self AddDStat("ItemStats", level.bgb[bgb].item_index, "stats", "used", "statValue", 1);
+
 		health = 0;
 		if (IsDefined(self.health))
 		{
 			health = self.health;
 		}
+
 		self RecordMapEvent(4, GetTime(), self.origin, level.round_number, level.bgb[bgb].item_index, health);
 		demo::bookmark("zm_player_bgb_grab", GetTime(), self);
+
 		if (SessionModeIsOnlineGame())
 		{
 			util::function_a4c90358("zm_bgb_consumed", 1);
@@ -703,7 +715,7 @@ function private bgb_limit_monitor()
 		case "rounds":
 			self thread bgb_set_debug_text(self.bgb);
 			count = level.bgb[self.bgb].limit + 1;
-			for(i = 0; i < count; i++)
+			for (i = 0; i < count; i++)
 			{
 				self set_timer(count - i, count);
 				level waittill("end_of_round");
@@ -812,7 +824,7 @@ function private function_5fc6d844(bgb)
 
 	if (IS_TRUE(level.bgb[bgb].var_50fe45f6))
 	{
-		function_650ca64(6);
+		function_650ca64(N_BGB_UIMODEL_CANCEL);
 	}
 	else
 	{
@@ -964,6 +976,7 @@ function private function_f9fad8b3(var_eeab9300, percent)
 {
 	self endon("disconnect");
 	self endon("hash_f9fad8b3");
+
 	start_time = GetTime();
 	end_time = start_time + 1000;
 	var_6d8b0ec7 = var_eeab9300;
@@ -978,6 +991,7 @@ function private function_f9fad8b3(var_eeab9300, percent)
 function private bgb_set_timer_clientfield(percent)
 {
 	self notify("hash_f9fad8b3");
+
 	var_eeab9300 = self clientfield::get_player_uimodel("bgb_timer");
 	if (percent < var_eeab9300 && 0.1 <= var_eeab9300 - percent)
 	{
@@ -1077,7 +1091,8 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 				Assert(false, "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
 			#/
 	}
-	level.bgb[name] = spawnstruct();
+
+	level.bgb[name] = SpawnStruct();
 	level.bgb[name].name = name;
 	level.bgb[name].limit_type = limit_type;
 	level.bgb[name].limit = limit;
@@ -1182,7 +1197,7 @@ function function_2060b89(name)
 	/#
 		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
-	level.bgb[name].var_50fe45f6 = 1;
+	level.bgb[name].var_50fe45f6 = true;
 }
 
 /*
@@ -1199,7 +1214,7 @@ function function_f132da9c(name)
 	/#
 		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
-	level.bgb[name].var_7ea552f4 = 1;
+	level.bgb[name].var_7ea552f4 = true;
 }
 
 /*
@@ -1220,38 +1235,37 @@ function function_d35f60a1(name)
 	}
 }
 
-/*
-	Name: give
-	Namespace: bgb
-	Checksum: 0xC2F91B7E
-	Offset: 0x40D0
-	Size: 0x1C3
-	Parameters: 1
-	Flags: None
-*/
 function give(name)
 {
 	self thread take();
+
 	if ("none" == name)
 	{
 		return;
 	}
+
 	/#
 		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
+
 	self notify("bgb_update", name, self.bgb);
 	self notify("bgb_update_give_" + name);
+
 	self.bgb = name;
+
 	self clientfield::set_player_uimodel("bgb_current", level.bgb[name].item_index);
 	self LUINotifyEvent(&"zombie_bgb_notification", 1, level.bgb[name].item_index);
+
 	if (IsDefined(level.bgb[name].enable_func))
 	{
-		self thread [[level.bgb[name].enable_func]]();
+		self thread [[ level.bgb[name].enable_func ]]();
 	}
+
 	if (IsDefined("activated" == level.bgb[name].limit_type))
 	{
 		self SetActionSlot(1, "bgb");
 	}
+
 	self thread bgb_limit_monitor();
 	self thread bgb_bled_out_monitor();
 }
@@ -1276,6 +1290,7 @@ function take()
 
 	self notify("bgb_update", "none", self.bgb);
 	self notify("bgb_update_take_" + self.bgb);
+
 	self.bgb = "none";
 }
 
@@ -1309,10 +1324,10 @@ function is_team_enabled(str_name)
 		#/
 		if (player.bgb == str_name)
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 /*
@@ -1346,8 +1361,11 @@ function function_dea74fb0(str_powerup, v_origin)
 	{
 		v_origin = self function_c219b050();
 	}
+
 	e_powerup = zm_powerups::specific_powerup_drop(str_powerup, v_origin);
+
 	wait(1);
+
 	if (IsDefined(e_powerup) && (!e_powerup zm::in_enabled_playable_area() && !e_powerup zm::in_life_brush()))
 	{
 		level thread function_434235f9(e_powerup);
@@ -1369,11 +1387,14 @@ function function_434235f9(e_powerup)
 	{
 		return;
 	}
+
 	e_powerup ghost();
 	e_powerup.clone_model = util::spawn_model(e_powerup.model, e_powerup.origin, e_powerup.angles);
 	e_powerup.clone_model LinkTo(e_powerup);
+
 	direction = e_powerup.origin;
 	direction = (direction[1], direction[0], 0);
+
 	if (direction[1] < 0 || (direction[0] > 0 && direction[1] > 0))
 	{
 		direction = (direction[0], direction[1] * -1, 0);
@@ -1382,6 +1403,7 @@ function function_434235f9(e_powerup)
 	{
 		direction = (direction[0] * -1, direction[1], 0);
 	}
+
 	if (!IS_TRUE(e_powerup.sndNoSamLaugh))
 	{
 		players = GetPlayers();
@@ -1393,11 +1415,13 @@ function function_434235f9(e_powerup)
 			}
 		}
 	}
+
 	PlayFXOnTag(level._effect["samantha_steal"], e_powerup, "tag_origin");
 	e_powerup.clone_model Unlink();
 	e_powerup.clone_model MoveZ(60, 1, 0.25, 0.25);
-	e_powerup.clone_model vibrate(direction, 1.5, 2.5, 1);
+	e_powerup.clone_model Vibrate(direction, 1.5, 2.5, 1);
 	e_powerup.clone_model waittill("movedone");
+
 	if (IsDefined(self.damagearea))
 	{
 		self.damagearea delete();
@@ -1555,9 +1579,9 @@ function add_to_player_score_override(n_points, str_awarded_by)
 function function_d51db887()
 {
 	keys = array::randomize(GetArrayKeys(level.bgb));
-	for(i = 0; i < keys.size; i++)
+	for (i = 0; i < keys.size; i++)
 	{
-		if (level.bgb[keys[i]].rarity != 1)
+		if (level.bgb[keys[i]].rarity != BGB_RARITY_MEGA_INDEX)
 		{
 			continue;
 		}
@@ -1583,7 +1607,9 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 	self endon("disconnect");
 	self endon("bled_out");
 	self endon("bgb_update");
+
 	self.var_6638f10b = [];
+
 	for(;;)
 	{
 		foreach (e_player in level.players)
@@ -1592,12 +1618,13 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 			{
 				continue;
 			}
+
 			array::remove_undefined(self.var_6638f10b);
 			var_368e2240 = array::contains(self.var_6638f10b, e_player);
-			var_50fd5a04 = zm_utility::is_player_valid(e_player, 0, 1) && function_2469cfe8(n_max_distance, self, e_player);
+			var_50fd5a04 = zm_utility::is_player_valid(e_player, false, true) && function_2469cfe8(n_max_distance, self, e_player);
 			if (!var_368e2240 && var_50fd5a04)
 			{
-				array::add(self.var_6638f10b, e_player, 0);
+				array::add(self.var_6638f10b, e_player, false);
 				if (IsDefined(var_98a3e738))
 				{
 					self thread [[var_98a3e738]](e_player);
@@ -1632,9 +1659,9 @@ function private function_2469cfe8(n_distance, var_d21815c4, var_441f84ff)
 	var_2931dc75 = DistanceSquared(var_d21815c4.origin, var_441f84ff.origin);
 	if (var_2931dc75 <= var_31dc18aa)
 	{
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 /*
@@ -1728,7 +1755,7 @@ function function_7d63d2eb()
 	self waittill("player_revived", e_reviver);
 
 	WAIT_SERVER_FRAME;
-	
+
 	if (IS_TRUE(self.var_df0decf1))
 	{
 		self notify("bgb_revive");
