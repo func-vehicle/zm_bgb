@@ -1,156 +1,130 @@
 #using scripts\codescripts\struct;
+
 #using scripts\shared\callbacks_shared;
 #using scripts\shared\clientfield_shared;
 #using scripts\shared\system_shared;
 #using scripts\shared\util_shared;
+
 #using scripts\zm\_load;
 #using scripts\zm\_zm_bgb_machine;
 
+#insert scripts\zm\_zm_bgb.gsh
+
 #namespace bgb;
 
-function autoexec __init__sytem__()
-{
-	system::register("bgb", &__init__, &__main__, undefined);
-}
+
+REGISTER_SYSTEM_EX( "bgb", &__init__, &__main__, undefined )
 
 function __init__()
 {
-	if(!(isdefined(level.bgb_in_use) && level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return;
 	}
 	
-	level.var_adfa48c4 = GetWeapon("zombie_bgb_grab");
+	level.weaponBGBGrab = GetWeapon("zombie_bgb_grab");
+
 	callback::on_localclient_connect(&on_player_connect);
-	level.bgb = [];
-	level.var_98ba48a2 = [];
-	clientfield::register("clientuimodel", "bgb_current", 1, 8, "int", &function_cec2dbda, 0, 0);
-	clientfield::register("clientuimodel", "bgb_display", 1, 1, "int", undefined, 0, 0);
-	clientfield::register("clientuimodel", "bgb_timer", 1, 8, "float", undefined, 0, 0);
-	clientfield::register("clientuimodel", "bgb_activations_remaining", 1, 3, "int", undefined, 0, 0);
-	clientfield::register("clientuimodel", "bgb_invalid_use", 1, 1, "counter", undefined, 0, 0);
-	clientfield::register("clientuimodel", "bgb_one_shot_use", 1, 1, "counter", undefined, 0, 0);
-	clientfield::register("toplayer", "bgb_blow_bubble", 1, 1, "counter", &function_f5d066f6, 0, 0);
-	level._effect["bgb_blow_bubble"] = "zombie/fx_bgb_bubble_blow_zmb";
+
+	level.bgb = []; // array for actual buffs
+	level.bgb_pack = [];
+
+	clientfield::register("clientuimodel", BGB_CURRENT_CF_NAME, 1, 8, "int", &bgb_store_current, 0, 0);
+	clientfield::register("clientuimodel", BGB_DISPLAY_CF_NAME, 1, 1, "int", undefined, 0, 0);
+	clientfield::register("clientuimodel", BGB_TIMER_CF_NAME, 1, 8, "float", undefined, 0, 0);
+	clientfield::register("clientuimodel", BGB_ACTIVATIONS_REMAINING_CF_NAME, 1, 3, "int", undefined, 0, 0);
+	clientfield::register("clientuimodel", BGB_INVALID_USE_CF_NAME, 1, 1, "counter", undefined, 0, 0);
+	clientfield::register("clientuimodel", BGB_ONE_SHOT_USE_CF_NAME, 1, 1, "counter", undefined, 0, 0);
+
+	clientfield::register("toplayer", BGB_BLOW_BUBBLE_CF_NAME, 1, 1, "counter", &bgb_blow_bubble, 0, 0);
+
+	level._effect[BGB_BLOW_BUBBLE_FX_NAME] = BGB_BLOW_BUBBLE_FX;
 }
 
-/*
-	Name: __main__
-	Namespace: bgb
-	Checksum: 0xE5DF4326
-	Offset: 0x500
-	Size: 0x2B
-	Parameters: 0
-	Flags: Private
-*/
 function private __main__()
 {
-	if(!(isdefined(level.bgb_in_use) && level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return;
 	}
-	function_47aee2eb();
+
+	bgb_finalize();
 }
 
-/*
-	Name: on_player_connect
-	Namespace: bgb
-	Checksum: 0xF80D05EB
-	Offset: 0x538
-	Size: 0x3B
-	Parameters: 1
-	Flags: Private
-*/
 function private on_player_connect(localClientNum)
 {
-	if(!(isdefined(level.bgb_in_use) && level.bgb_in_use))
+	if (!IS_TRUE(level.bgb_in_use))
 	{
 		return;
 	}
-	self thread function_e94a4b1b(localClientNum);
+
+	self thread bgb_player_init(localClientNum);
 }
 
-/*
-	Name: function_e94a4b1b
-	Namespace: bgb
-	Checksum: 0x7253B4EB
-	Offset: 0x580
-	Size: 0x41
-	Parameters: 1
-	Flags: Private
-*/
-function private function_e94a4b1b(localClientNum)
+function private bgb_player_init(localClientNum)
 {
-	if(isdefined(level.var_98ba48a2[localClientNum]))
+	if (IsDefined(level.bgb_pack[localClientNum]))
 	{
 		return;
 	}
-	level.var_98ba48a2[localClientNum] = function_14fa98a9(localClientNum);
+
+	level.bgb_pack[localClientNum] = GetBubblegumPack(localClientNum);
 }
 
-/*
-	Name: function_47aee2eb
-	Namespace: bgb
-	Checksum: 0x92D48920
-	Offset: 0x5D0
-	Size: 0x383
-	Parameters: 0
-	Flags: Private
-*/
-function private function_47aee2eb()
+function private bgb_finalize()
 {
 	level.var_f3c83828 = [];
-	level.var_f3c83828[0] = "base";
-	level.var_f3c83828[1] = "speckled";
-	level.var_f3c83828[2] = "shiny";
-	level.var_f3c83828[3] = "swirl";
-	level.var_f3c83828[4] = "pinwheel";
+	level.var_f3c83828[0] = BGB_RARITY_CLASSIC_TAG;
+	level.var_f3c83828[1] = BGB_RARITY_MEGA_TAG;
+	level.var_f3c83828[2] = BGB_RARITY_RARE_TAG;
+	level.var_f3c83828[3] = BGB_RARITY_ULTRA_RARE_TAG;
+	level.var_f3c83828[4] = BGB_RARITY_WHIMSICAL_TAG;
+
 	statsTableName = util::getStatsTableName();
-	level.var_318929eb = [];
-	keys = getArrayKeys(level.bgb);
-	for(i = 0; i < keys.size; i++)
+
+	level.bgb_item_index_to_name = [];
+
+	keys = GetArrayKeys(level.bgb);
+	for (i = 0; i < keys.size; i++)
 	{
-		level.bgb[keys[i]].var_e25ca181 = GetItemIndexFromRef(keys[i]);
-		level.bgb[keys[i]].var_d277f374 = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].var_e25ca181, 16));
-		if(0 == level.bgb[keys[i]].var_d277f374 || 4 == level.bgb[keys[i]].var_d277f374)
+		level.bgb[keys[i]].item_index = GetItemIndexFromRef(keys[i]);
+		level.bgb[keys[i]].rarity = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
+		if (level.bgb[keys[i]].rarity == BGB_RARITY_CLASSIC_INDEX || level.bgb[keys[i]].rarity == BGB_RARITY_WHIMSICAL_INDEX)
 		{
-			level.bgb[keys[i]].var_e0715b48 = 0;
+			level.bgb[keys[i]].consumable = false;
 		}
 		else
 		{
-			level.bgb[keys[i]].var_e0715b48 = 1;
+			level.bgb[keys[i]].consumable = true;
 		}
-		level.bgb[keys[i]].camo_index = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].var_e25ca181, 5));
-		level.bgb[keys[i]].var_d3c80142 = "tag_gumball_" + level.bgb[keys[i]].limit_type;
-		level.bgb[keys[i]].var_ece14434 = "tag_gumball_" + level.bgb[keys[i]].limit_type + "_" + level.var_f3c83828[level.bgb[keys[i]].var_d277f374];
-		level.var_318929eb[level.bgb[keys[i]].var_e25ca181] = keys[i];
+
+		level.bgb[keys[i]].camo_index = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
+
+		level.bgb[keys[i]].flying_gumball_tag = "tag_gumball_" + level.bgb[keys[i]].limit_type;
+		level.bgb[keys[i]].give_gumball_tag = "tag_gumball_" + level.bgb[keys[i]].limit_type + "_" + level.var_f3c83828[level.bgb[keys[i]].rarity];
+
+		level.bgb_item_index_to_name[level.bgb[keys[i]].item_index] = keys[i];
 	}
 }
 
-/*
-	Name: register
-	Namespace: bgb
-	Checksum: 0x8C8068F6
-	Offset: 0x960
-	Size: 0x143
-	Parameters: 2
-	Flags: None
-*/
 function register(name, limit_type)
 {
 	/#
-		Assert(isdefined(name), "Dev Block strings are not supported");
+		Assert(IsDefined(name), "Dev Block strings are not supported");
 	#/
 	/#
 		Assert("Dev Block strings are not supported" != name, "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
 	#/
 	/#
-		Assert(!isdefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(!IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
+
 	/#
-		Assert(isdefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
 	#/
-	level.bgb[name] = spawnstruct();
+
+	level.bgb[name] = SpawnStruct();
+	
 	level.bgb[name].name = name;
 	level.bgb[name].limit_type = limit_type;
 }
@@ -168,11 +142,12 @@ function private function_78c4bfa(localClientNum, time)
 {
 	self endon("death");
 	self endon("entityshutdown");
-	if(IsDemoPlaying())
+
+	if (IsDemoPlaying())
 	{
 		return;
 	}
-	if(!isdefined(self.bgb) || !isdefined(level.bgb[self.bgb]))
+	if (!IsDefined(self.bgb) || !IsDefined(level.bgb[self.bgb]))
 	{
 		return;
 	}
@@ -205,61 +180,34 @@ function private function_78c4bfa(localClientNum, time)
 	}
 	self SetControllerLightbarColor(localClientNum, color);
 	wait(time);
-	if(isdefined(self))
+	if (IsDefined(self))
 	{
 		self SetControllerLightbarColor(localClientNum);
 	}
 }
 
-/*
-	Name: function_cec2dbda
-	Namespace: bgb
-	Checksum: 0xD8DC07CD
-	Offset: 0xC38
-	Size: 0x6B
-	Parameters: 7
-	Flags: Private
-*/
-function private function_cec2dbda(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
+function private bgb_store_current(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
 {
-	self.bgb = level.var_318929eb[newVal];
+	self.bgb = level.bgb_item_index_to_name[newVal];
 	self thread function_78c4bfa(localClientNum, 3);
 }
 
-/*
-	Name: function_c8a1c86
-	Namespace: bgb
-	Checksum: 0x8B49EA30
-	Offset: 0xCB0
-	Size: 0x93
-	Parameters: 2
-	Flags: Private
-*/
-function private function_c8a1c86(localClientNum, FX)
+function private bgb_play_fx_on_camera(localClientNum, FX)
 {
-	if(isdefined(self.var_d7197e33))
+	if (IsDefined(self.var_d7197e33))
 	{
-		deletefx(localClientNum, self.var_d7197e33, 1);
+		DeleteFX(localClientNum, self.var_d7197e33, 1);
 	}
-	if(isdefined(FX))
+
+	if (IsDefined(FX))
 	{
 		self.var_d7197e33 = PlayFXOnCamera(localClientNum, FX);
-		self playsound(0, "zmb_bgb_blow_bubble_plr");
+		self PlaySound(0, "zmb_bgb_blow_bubble_plr");
 	}
 }
 
-/*
-	Name: function_f5d066f6
-	Namespace: bgb
-	Checksum: 0x66C74291
-	Offset: 0xD50
-	Size: 0x83
-	Parameters: 7
-	Flags: Private
-*/
-function private function_f5d066f6(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
+function private bgb_blow_bubble(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
 {
-	function_c8a1c86(localClientNum, level._effect["bgb_blow_bubble"]);
+	bgb_play_fx_on_camera(localClientNum, level._effect[BGB_BLOW_BUBBLE_FX_NAME]);
 	self thread function_78c4bfa(localClientNum, 0.5);
 }
-

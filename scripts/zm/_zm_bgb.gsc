@@ -53,14 +53,14 @@ function private __init__()
 
 	level.bgb = []; // array for actual buffs
 
-	clientfield::register("clientuimodel", "bgb_current", 1, 8, "int");
-	clientfield::register("clientuimodel", "bgb_display", 1, 1, "int");
-	clientfield::register("clientuimodel", "bgb_timer", 1, 8, "float");
-	clientfield::register("clientuimodel", "bgb_activations_remaining", 1, 3, "int");
-	clientfield::register("clientuimodel", "bgb_invalid_use", 1, 1, "counter");
-	clientfield::register("clientuimodel", "bgb_one_shot_use", 1, 1, "counter");
+	clientfield::register("clientuimodel", BGB_CURRENT_CF_NAME, 1, 8, "int");
+	clientfield::register("clientuimodel", BGB_DISPLAY_CF_NAME, 1, 1, "int");
+	clientfield::register("clientuimodel", BGB_TIMER_CF_NAME, 1, 8, "float");
+	clientfield::register("clientuimodel", BGB_ACTIVATIONS_REMAINING_CF_NAME, 1, 3, "int");
+	clientfield::register("clientuimodel", BGB_INVALID_USE_CF_NAME, 1, 1, "counter");
+	clientfield::register("clientuimodel", BGB_ONE_SHOT_USE_CF_NAME, 1, 1, "counter");
 
-	clientfield::register("toplayer", "bgb_blow_bubble", 1, 1, "counter");
+	clientfield::register("toplayer", BGB_BLOW_BUBBLE_CF_NAME, 1, 1, "counter");
 
 	zm::register_vehicle_damage_callback(&vehicle_damage_override);
 }
@@ -127,7 +127,7 @@ function private bgb_player_init()
 			continue;
 		}
 		self.bgb_stats[bgb] = SpawnStruct();
-		self.bgb_stats[bgb].var_e0b06b47 = self function_2ab74414(bgb);
+		self.bgb_stats[bgb].var_e0b06b47 = self GetBGBRemaining(bgb);
 		self.bgb_stats[bgb].bgb_used_this_game = 0;
 	}
 
@@ -600,7 +600,7 @@ function private bgb_play_gumball_anim_begin(bgb, activating)
 
 	if (weapon == level.weaponBGBUse)
 	{
-		self clientfield::increment_to_player("bgb_blow_bubble");
+		self clientfield::increment_to_player(BGB_BLOW_BUBBLE_CF_NAME);
 	}
 
 	return w_original;
@@ -659,8 +659,8 @@ function private bgb_clear_monitors_and_clientfields()
 	self notify("bgb_limit_monitor");
 	self notify("bgb_activation_monitor");
 
-	self clientfield::set_player_uimodel("bgb_display", 0);
-	self clientfield::set_player_uimodel("bgb_activations_remaining", 0);
+	self clientfield::set_player_uimodel(BGB_DISPLAY_CF_NAME, 0);
+	self clientfield::set_player_uimodel(BGB_ACTIVATIONS_REMAINING_CF_NAME, 0);
 	self clear_timer();
 }
 
@@ -672,7 +672,7 @@ function private bgb_limit_monitor()
 	self notify("bgb_limit_monitor");
 	self endon("bgb_limit_monitor");
 
-	self clientfield::set_player_uimodel("bgb_display", 1);
+	self clientfield::set_player_uimodel(BGB_DISPLAY_CF_NAME, 1);
 	self thread function_5fc6d844(self.bgb);
 
 	switch(level.bgb[self.bgb].limit_type)
@@ -691,7 +691,7 @@ function private bgb_limit_monitor()
 				{
 					self set_timer(i, level.bgb[self.bgb].limit);
 				}
-				self clientfield::set_player_uimodel("bgb_activations_remaining", i);
+				self clientfield::set_player_uimodel(BGB_ACTIVATIONS_REMAINING_CF_NAME, i);
 
 				self thread bgb_set_debug_text(self.bgb, i);
 				self waittill("bgb_activation");
@@ -806,7 +806,7 @@ function private function_b616fe7a(b_chewing = false)
 	var_847ec8da = IsDefined(level.var_9cef605e) && !self [[ level.var_9cef605e ]]();
 	if (!b_chewing && IS_DRINKING(self.is_drinking) || IS_TRUE(self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
 	{
-		self clientfield::increment_uimodel("bgb_invalid_use");
+		self clientfield::increment_uimodel(BGB_INVALID_USE_CF_NAME);
 		self PlayLocalSound("zmb_bgb_deny_plr");
 		return false;
 	}
@@ -854,7 +854,7 @@ function private function_5fc6d844(bgb)
 function function_650ca64(n_value)
 {
 	self SetActionSlot(1, "bgb");
-	self clientfield::set_player_uimodel("bgb_activations_remaining", n_value);
+	self clientfield::set_player_uimodel(BGB_ACTIVATIONS_REMAINING_CF_NAME, n_value);
 }
 
 /*
@@ -868,7 +868,7 @@ function function_650ca64(n_value)
 */
 function function_eabb0903(n_value)
 {
-	self clientfield::set_player_uimodel("bgb_activations_remaining", 0);
+	self clientfield::set_player_uimodel(BGB_ACTIVATIONS_REMAINING_CF_NAME, 0);
 }
 
 /*
@@ -887,7 +887,7 @@ function function_336ffc4e(name)
 
 function do_one_shot_use(skip_demo_bookmark = false)
 {
-	self clientfield::increment_uimodel("bgb_one_shot_use");
+	self clientfield::increment_uimodel(BGB_ONE_SHOT_USE_CF_NAME);
 
 	if (!skip_demo_bookmark)
 	{
@@ -988,12 +988,12 @@ function private function_f9fad8b3(var_eeab9300, percent)
 	self endon("hash_f9fad8b3");
 
 	start_time = GetTime();
-	end_time = start_time + 1000;
+	end_time = start_time + BGB_TIMER_MANUAL_LERP_PERIOD;
 	var_6d8b0ec7 = var_eeab9300;
 	while (var_6d8b0ec7 > percent)
 	{
 		var_6d8b0ec7 = LerpFloat(percent, var_eeab9300, calc_remaining_duration_lerp(start_time, end_time));
-		self clientfield::set_player_uimodel("bgb_timer", var_6d8b0ec7);
+		self clientfield::set_player_uimodel(BGB_TIMER_CF_NAME, var_6d8b0ec7);
 		WAIT_SERVER_FRAME;
 	}
 }
@@ -1002,14 +1002,14 @@ function private bgb_set_timer_clientfield(percent)
 {
 	self notify("hash_f9fad8b3");
 
-	var_eeab9300 = self clientfield::get_player_uimodel("bgb_timer");
-	if (percent < var_eeab9300 && 0.1 <= var_eeab9300 - percent)
+	var_eeab9300 = self clientfield::get_player_uimodel(BGB_TIMER_CF_NAME);
+	if (percent < var_eeab9300 && BGB_TIMER_MANUAL_LERP_THRESHOLD <= var_eeab9300 - percent)
 	{
 		self thread function_f9fad8b3(var_eeab9300, percent);
 	}
 	else
 	{
-		self clientfield::set_player_uimodel("bgb_timer", percent);
+		self clientfield::set_player_uimodel(BGB_TIMER_CF_NAME, percent);
 	}
 }
 
@@ -1263,7 +1263,7 @@ function give(name)
 
 	self.bgb = name;
 
-	self clientfield::set_player_uimodel("bgb_current", level.bgb[name].item_index);
+	self clientfield::set_player_uimodel(BGB_CURRENT_CF_NAME, level.bgb[name].item_index);
 	self LUINotifyEvent(&"zombie_bgb_notification", 1, level.bgb[name].item_index);
 
 	if (IsDefined(level.bgb[name].enable_func))
@@ -1677,7 +1677,7 @@ function private function_2469cfe8(n_distance, var_d21815c4, var_441f84ff)
 */
 function function_ca189700()
 {
-	self clientfield::increment_uimodel("bgb_invalid_use");
+	self clientfield::increment_uimodel(BGB_INVALID_USE_CF_NAME);
 	self PlayLocalSound("zmb_bgb_deny_plr");
 }
 
