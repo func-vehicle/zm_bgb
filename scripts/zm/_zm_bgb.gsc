@@ -30,7 +30,7 @@
 #using scripts\zm\_zm_weapons;
 #using scripts\zm\gametypes\_globallogic_score;
 
-#insert scripts\zm\_zm_bgb.gsh
+#insert scripts\zm\_zm_bgb.gsh;
 #insert scripts\zm\_zm_perks.gsh;
 #insert scripts\zm\_zm_utility.gsh;
 

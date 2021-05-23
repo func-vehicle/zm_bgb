@@ -8,7 +8,9 @@
 #using scripts\zm\_load;
 #using scripts\zm\_zm_bgb_machine;
 
-#insert scripts\zm\_zm_bgb.gsh
+#insert scripts\zm\_zm_bgb.gsh;
+
+#precache( "client_fx", "zombie/fx_bgb_bubble_blow_zmb" );
 
 #namespace bgb;
 
@@ -194,14 +196,14 @@ function private bgb_store_current(localClientNum, oldVal, newVal, bNewEnt, bIni
 
 function private bgb_play_fx_on_camera(localClientNum, FX)
 {
-	if (IsDefined(self.var_d7197e33))
+	if (IsDefined(self.bgb_bubble_blow_fx))
 	{
-		DeleteFX(localClientNum, self.var_d7197e33, 1);
+		DeleteFX(localClientNum, self.bgb_bubble_blow_fx, 1);
 	}
 
 	if (IsDefined(FX))
 	{
-		self.var_d7197e33 = PlayFXOnCamera(localClientNum, FX);
+		self.bgb_bubble_blow_fx = PlayFXOnCamera(localClientNum, FX);
 		self PlaySound(0, "zmb_bgb_blow_bubble_plr");
 	}
 }
