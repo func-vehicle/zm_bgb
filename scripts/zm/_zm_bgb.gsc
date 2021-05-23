@@ -237,33 +237,25 @@ function private setup_devgui()
 		waittillframeend;
 		SetDvar("Dev Block strings are not supported", "Dev Block strings are not supported");
 		SetDvar("Dev Block strings are not supported", -1);
-		var_33b4e7c1 = "Dev Block strings are not supported";
+		bgb_devgui_base = "Dev Block strings are not supported";
 		keys = GetArrayKeys(level.bgb);
 		foreach (key in keys)
 		{
-			AddDebugCommand(var_33b4e7c1 + key + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + key + "Dev Block strings are not supported");
+			AddDebugCommand(bgb_devgui_base + key + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + key + "Dev Block strings are not supported");
 		}
-		AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
-		AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
+
+		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
+		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
 		for (i = 0; i < 4; i++)
 		{
 			playerNum = i + 1;
-			AddDebugCommand(var_33b4e7c1 + "Dev Block strings are not supported" + playerNum + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + i + "Dev Block strings are not supported");
+			AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + playerNum + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + i + "Dev Block strings are not supported");
 		}
-		level thread function_70fe94ae();
+		level thread bgb_devgui_think();
 	#/
 }
 
-/*
-	Name: function_70fe94ae
-	Namespace: bgb
-	Checksum: 0x286D0311
-	Offset: 0x1578
-	Size: 0x7F
-	Parameters: 0
-	Flags: Private
-*/
-function private function_70fe94ae()
+function private bgb_devgui_think()
 {
 	/#
 		for(;;)
@@ -311,74 +303,74 @@ function private function_dea9a9da(var_a961d470)
 	#/
 }
 
-/*
-	Name: function_ef47b774
-	Namespace: bgb
-	Checksum: 0x852D87D8
-	Offset: 0x1728
-	Size: 0x143
-	Parameters: 0
-	Flags: Private
-*/
-function private function_ef47b774()
+function private bgb_debug_text_display_init()
 {
 	/#
-		self.var_94ee23e0 = newClientHudElem(self);
-		self.var_94ee23e0.elemType = "Dev Block strings are not supported";
-		self.var_94ee23e0.font = "Dev Block strings are not supported";
-		self.var_94ee23e0.fontscale = 1.8;
-		self.var_94ee23e0.horzAlign = "Dev Block strings are not supported";
-		self.var_94ee23e0.vertAlign = "Dev Block strings are not supported";
-		self.var_94ee23e0.alignX = "Dev Block strings are not supported";
-		self.var_94ee23e0.alignY = "Dev Block strings are not supported";
-		self.var_94ee23e0.x = 15;
-		self.var_94ee23e0.y = 35;
-		self.var_94ee23e0.sort = 2;
-		self.var_94ee23e0.color = (1, 1, 1);
-		self.var_94ee23e0.alpha = 1;
-		self.var_94ee23e0.hidewheninmenu = 1;
+		self.bgb_debug_text = newClientHudElem(self);
+		self.bgb_debug_text.elemType = "font";
+		self.bgb_debug_text.font = "objective";
+		self.bgb_debug_text.fontscale = 1.8;
+		self.bgb_debug_text.horzAlign = "left";
+		self.bgb_debug_text.vertAlign = "top";
+		self.bgb_debug_text.alignX = "left";
+		self.bgb_debug_text.alignY = "top";
+		self.bgb_debug_text.x = 15;
+		self.bgb_debug_text.y = 35;
+		self.bgb_debug_text.sort = 2;
+
+		self.bgb_debug_text.color = (1, 1, 1);
+		self.bgb_debug_text.alpha = 1;
+
+		self.bgb_debug_text.hidewheninmenu = true;
 	#/
 }
 
-function private bgb_set_debug_text(name, var_2741876d)
+function private bgb_set_debug_text(name, activations_remaining)
 {
 	/#
-		if (!IsDefined(self.var_94ee23e0))
+		if (!IsDefined(self.bgb_debug_text))
 		{
 			return;
 		}
-		if (IsDefined(var_2741876d))
+
+		if (IsDefined(activations_remaining))
 		{
-			self clientfield::set_player_uimodel("Dev Block strings are not supported", 1);
+			self clientfield::set_player_uimodel("hudItems.showDpadUp", 1);
 		}
 		else
 		{
-			self clientfield::set_player_uimodel("Dev Block strings are not supported", 0);
+			self clientfield::set_player_uimodel("hudItems.showDpadUp", 0);
 		}
-		self notify("hash_ad571a66");
-		self endon("hash_ad571a66");
+
+		self notify("bgb_set_debug_text_thread");
+		self endon("bgb_set_debug_text_thread");
 		self endon("disconnect");
-		self.var_94ee23e0 fadeOverTime(0.05);
-		self.var_94ee23e0.alpha = 1;
-		prefix = "Dev Block strings are not supported";
-		var_fc8642f1 = name;
+
+		self.bgb_debug_text fadeOverTime(0.05);
+		self.bgb_debug_text.alpha = 1;
+
+		prefix = "zm_bgb_";
+		short_name = name;
 		if (IsSubStr(name, prefix))
 		{
-			var_fc8642f1 = GetSubStr(name, prefix.size);
+			short_name = GetSubStr(name, prefix.size);
 		}
-		if (IsDefined(var_2741876d))
+		
+		if (IsDefined(activations_remaining))
 		{
-			self.var_94ee23e0 setText("Dev Block strings are not supported" + var_fc8642f1 + "Dev Block strings are not supported" + var_2741876d + "Dev Block strings are not supported");
+			self.bgb_debug_text setText( "BGB: " + short_name + ", [{+actionslot 1}] to activate (" + activations_remaining + " left)" );
 		}
 		else
 		{
-			self.var_94ee23e0 setText("Dev Block strings are not supported" + var_fc8642f1);
+			self.bgb_debug_text setText( "BGB: " + short_name );
 		}
+
 		wait(1);
-		if ("Dev Block strings are not supported" == name)
+
+		if ("none" == name)
 		{
-			self.var_94ee23e0 fadeOverTime(1);
-			self.var_94ee23e0.alpha = 0;
+			self.bgb_debug_text fadeOverTime(1);
+			self.bgb_debug_text.alpha = 0;
 		}
 	#/
 }
@@ -480,11 +472,11 @@ function private function_c3e0b2ba(bgb)
 		return;
 	}
 
-	var_b0106e56 = self EnableInvulnerability();
+	was_invulnerable = self EnableInvulnerability();
 
 	self util::waittill_any_timeout(2, "bgb_bubble_blow_complete");
 
-	if (IsDefined(self) && var_b0106e56)
+	if (IsDefined(self) && was_invulnerable)
 	{
 		self DisableInvulnerability();
 	}
@@ -1255,7 +1247,7 @@ function give(name)
 	}
 
 	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(level.bgb[name]), "bgb::give(): BGB '" + name + "' was never registered");
 	#/
 
 	self notify("bgb_update", name, self.bgb);

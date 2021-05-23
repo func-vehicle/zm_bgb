@@ -10,7 +10,7 @@
 
 #insert scripts\zm\_zm_bgb.gsh;
 
-#precache( "client_fx", "zombie/fx_bgb_bubble_blow_zmb" );
+#precache( "client_fx", BGB_BLOW_BUBBLE_FX );
 
 #namespace bgb;
 
@@ -75,12 +75,12 @@ function private bgb_player_init(localClientNum)
 
 function private bgb_finalize()
 {
-	level.var_f3c83828 = [];
-	level.var_f3c83828[0] = BGB_RARITY_CLASSIC_TAG;
-	level.var_f3c83828[1] = BGB_RARITY_MEGA_TAG;
-	level.var_f3c83828[2] = BGB_RARITY_RARE_TAG;
-	level.var_f3c83828[3] = BGB_RARITY_ULTRA_RARE_TAG;
-	level.var_f3c83828[4] = BGB_RARITY_WHIMSICAL_TAG;
+	level.bgb_rarity_tags = [];
+	level.bgb_rarity_tags[0] = BGB_RARITY_CLASSIC_TAG;
+	level.bgb_rarity_tags[1] = BGB_RARITY_MEGA_TAG;
+	level.bgb_rarity_tags[2] = BGB_RARITY_RARE_TAG;
+	level.bgb_rarity_tags[3] = BGB_RARITY_ULTRA_RARE_TAG;
+	level.bgb_rarity_tags[4] = BGB_RARITY_WHIMSICAL_TAG;
 
 	statsTableName = util::getStatsTableName();
 
@@ -90,7 +90,9 @@ function private bgb_finalize()
 	for (i = 0; i < keys.size; i++)
 	{
 		level.bgb[keys[i]].item_index = GetItemIndexFromRef(keys[i]);
+
 		level.bgb[keys[i]].rarity = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
+
 		if (level.bgb[keys[i]].rarity == BGB_RARITY_CLASSIC_INDEX || level.bgb[keys[i]].rarity == BGB_RARITY_WHIMSICAL_INDEX)
 		{
 			level.bgb[keys[i]].consumable = false;
@@ -103,7 +105,7 @@ function private bgb_finalize()
 		level.bgb[keys[i]].camo_index = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
 
 		level.bgb[keys[i]].flying_gumball_tag = "tag_gumball_" + level.bgb[keys[i]].limit_type;
-		level.bgb[keys[i]].give_gumball_tag = "tag_gumball_" + level.bgb[keys[i]].limit_type + "_" + level.var_f3c83828[level.bgb[keys[i]].rarity];
+		level.bgb[keys[i]].give_gumball_tag = "tag_gumball_" + level.bgb[keys[i]].limit_type + "_" + level.bgb_rarity_tags[level.bgb[keys[i]].rarity];
 
 		level.bgb_item_index_to_name[level.bgb[keys[i]].item_index] = keys[i];
 	}
@@ -112,17 +114,17 @@ function private bgb_finalize()
 function register(name, limit_type)
 {
 	/#
-		Assert(IsDefined(name), "Dev Block strings are not supported");
+		Assert(IsDefined(name), "bgb::register(): name must be defined");
 	#/
 	/#
-		Assert("Dev Block strings are not supported" != name, "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
+		Assert("none" != name, bgb::register(): name cannot be '" + "none" + "', that name is reserved as an internal sentinel value");
 	#/
 	/#
-		Assert(!IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(!IsDefined(level.bgb[name]), "bgb::register(): BGB '" + name + "' has already been registered");
 	#/
 
 	/#
-		Assert(IsDefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
+		Assert(IsDefined(limit_type), "bgb::register(): BGB '" + name + "': limit_type must be defined");
 	#/
 
 	level.bgb[name] = SpawnStruct();
@@ -131,16 +133,7 @@ function register(name, limit_type)
 	level.bgb[name].limit_type = limit_type;
 }
 
-/*
-	Name: function_78c4bfa
-	Namespace: bgb
-	Checksum: 0x199C3CA9
-	Offset: 0xAB0
-	Size: 0x17B
-	Parameters: 2
-	Flags: Private
-*/
-function private function_78c4bfa(localClientNum, time)
+function private bgb_lightbar_color(localClientNum, time)
 {
 	self endon("death");
 	self endon("entityshutdown");
@@ -191,14 +184,14 @@ function private function_78c4bfa(localClientNum, time)
 function private bgb_store_current(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
 {
 	self.bgb = level.bgb_item_index_to_name[newVal];
-	self thread function_78c4bfa(localClientNum, 3);
+	self thread bgb_lightbar_color(localClientNum, 3);
 }
 
 function private bgb_play_fx_on_camera(localClientNum, FX)
 {
 	if (IsDefined(self.bgb_bubble_blow_fx))
 	{
-		DeleteFX(localClientNum, self.bgb_bubble_blow_fx, 1);
+		DeleteFX(localClientNum, self.bgb_bubble_blow_fx, true);
 	}
 
 	if (IsDefined(FX))
@@ -211,5 +204,5 @@ function private bgb_play_fx_on_camera(localClientNum, FX)
 function private bgb_blow_bubble(localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump)
 {
 	bgb_play_fx_on_camera(localClientNum, level._effect[BGB_BLOW_BUBBLE_FX_NAME]);
-	self thread function_78c4bfa(localClientNum, 0.5);
+	self thread bgb_lightbar_color(localClientNum, 0.5);
 }
