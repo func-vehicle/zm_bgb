@@ -133,45 +133,50 @@ function private bgb_player_init()
 		}
 		self.bgb_stats[bgb] = SpawnStruct();
 		self.bgb_stats[bgb].var_e0b06b47 = self function_2ab74414(bgb);
-		self.bgb_stats[bgb].var_b75c376 = 0;
+		self.bgb_stats[bgb].bgb_used_this_game = 0;
 	}
+
 	self.var_85da8a33 = 0;
 	self clientfield::set_to_player("zm_bgb_machine_round_buys", self.var_85da8a33);
+
 	self init_weapon_cycling();
-	self thread function_94160e1d();
-	self thread function_efd2e645();
+
+	self thread bgb_player_monitor();
+	self thread bgb_end_game();
 }
 
-/*
-	Name: function_efd2e645
-	Namespace: bgb
-	Checksum: 0x9DFCA1C2
-	Offset: 0xD30
-	Size: 0x20B
-	Parameters: 0
-	Flags: Private
-*/
-function private function_efd2e645()
+// when the game ends:
+// - take any bgb that the player is carrying
+// - add count of bgbs used this game to the player's stat
+function private bgb_end_game()
 {
 	self endon("disconnect");
-	if(!level flag::exists("consumables_reported"))
+
+	if (!level flag::exists("consumables_reported"))
 	{
 		level flag::init("consumables_reported");
 	}
 	self flag::init("finished_reporting_consumables");
+
 	self waittill("report_bgb_consumption");
+
+	// - take any bgb that the player is carrying
 	self thread take();
+
 	self function_e1f3d6d7();
 	self zm_stats::set_global_stat("bgb_tokens_gained_this_game", self.var_f191a1fc);
-	foreach(bgb in self.bgb_pack)
+
+	// - add count of bgbs used this game to the player's stat
+	foreach (bgb in self.bgb_pack)
 	{
-		if(!isdefined(self.bgb_stats[bgb]) || !self.bgb_stats[bgb].var_b75c376)
+		// ignore non-consumables
+		if (!IsDefined(self.bgb_stats[bgb]) || !self.bgb_stats[bgb].bgb_used_this_game)
 		{
 			continue;
 		}
 		level flag::set("consumables_reported");
-		zm_utility::increment_zm_dash_counter("end_consumables_count", self.bgb_stats[bgb].var_b75c376);
-		self function_99b36259(bgb, self.bgb_stats[bgb].var_b75c376);
+		zm_utility::increment_zm_dash_counter("end_consumables_count", self.bgb_stats[bgb].bgb_used_this_game);
+		self function_99b36259(bgb, self.bgb_stats[bgb].bgb_used_this_game);
 	}
 	self flag::set("finished_reporting_consumables");
 }
@@ -194,7 +199,7 @@ function private bgb_finalize()
 		}
 		level.bgb[keys[i]].camo_index = Int(tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
 		var_cf65a2c0 = tableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 15);
-		if(IsSubStr(var_cf65a2c0, "dlc"))
+		if (IsSubStr(var_cf65a2c0, "dlc"))
 		{
 			level.bgb[keys[i]].dlc_index = Int(var_cf65a2c0[3]);
 			continue;
@@ -203,34 +208,27 @@ function private bgb_finalize()
 	}
 }
 
-/*
-	Name: function_94160e1d
-	Namespace: bgb
-	Checksum: 0xE1E0D6B1
-	Offset: 0x1228
-	Size: 0xD7
-	Parameters: 0
-	Flags: Private
-*/
-function private function_94160e1d()
+function private bgb_player_monitor()
 {
 	self endon("disconnect");
-	while(1)
+
+	for(;;)
 	{
-		var_bc5cda7b = level util::waittill_any_return("between_round_over", "restart_round");
-		if(isdefined(level.var_4824bb2d))
+		str_return = level util::waittill_any_return("between_round_over", "restart_round");
+		if (IsDefined(level.var_4824bb2d))
 		{
 			if(!(isdefined(self [[level.var_4824bb2d]]()) && self [[level.var_4824bb2d]]()))
 			{
 				continue;
 			}
 		}
-		if(var_bc5cda7b === "restart_round")
+		if (str_return === "restart_round")
 		{
 			level waittill("between_round_over");
 		}
 		else
 		{
+			// get your ability to grab a bubblegum buff back every round
 			self.var_85da8a33 = 0;
 			self clientfield::set_to_player("zm_bgb_machine_round_buys", self.var_85da8a33);
 		}
@@ -420,8 +418,8 @@ function function_47db72b6(bgb)
 {
 	/#
 		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].var_e0b06b47, (1, 1, 1));
-		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].var_b75c376, (1, 1, 1));
-		var_e4140345 = self.bgb_stats[bgb].var_e0b06b47 - self.bgb_stats[bgb].var_b75c376;
+		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].bgb_used_this_game, (1, 1, 1));
+		var_e4140345 = self.bgb_stats[bgb].var_e0b06b47 - self.bgb_stats[bgb].bgb_used_this_game;
 		PrintTopRightln(bgb + "Dev Block strings are not supported" + var_e4140345, (1, 1, 1));
 	#/
 }
@@ -437,7 +435,7 @@ function function_47db72b6(bgb)
 */
 function private has_consumable_bgb(bgb)
 {
-	if(!isdefined(self.bgb_stats[bgb]) || (!isdefined(level.bgb[bgb].consumable) && level.bgb[bgb].consumable))
+	if (!IsDefined(self.bgb_stats[bgb]) || (!IsDefined(level.bgb[bgb].consumable) && level.bgb[bgb].consumable))
 	{
 		return 0;
 	}
@@ -458,18 +456,18 @@ function private has_consumable_bgb(bgb)
 */
 function function_66a597c1(bgb)
 {
-	if(!has_consumable_bgb(bgb))
+	if (!has_consumable_bgb(bgb))
 	{
 		return;
 	}
-	if(isdefined(level.bgb[bgb].var_35e23ba2) && ![[level.bgb[bgb].var_35e23ba2]]())
+	if (IsDefined(level.bgb[bgb].var_35e23ba2) && ![[level.bgb[bgb].var_35e23ba2]]())
 	{
 		return;
 	}
-	self.bgb_stats[bgb].var_b75c376++;
+	self.bgb_stats[bgb].bgb_used_this_game++;
 	self flag::set("used_consumable");
 	zm_utility::increment_zm_dash_counter("consumables_used", 1);
-	if(level flag::exists("first_consumables_used"))
+	if (level flag::exists("first_consumables_used"))
 	{
 		level flag::set("first_consumables_used");
 	}
@@ -479,23 +477,14 @@ function function_66a597c1(bgb)
 	#/
 }
 
-/*
-	Name: function_f59fbff
-	Namespace: bgb
-	Checksum: 0x22869CFC
-	Offset: 0x1D40
-	Size: 0x8B
-	Parameters: 1
-	Flags: None
-*/
-function function_f59fbff(bgb)
+function get_bgb_available(bgb)
 {
-	if(!isdefined(self.bgb_stats[bgb]))
+	if (!IsDefined(self.bgb_stats[bgb]))
 	{
-		return 1;
+		return true;
 	}
 	var_3232aae6 = self.bgb_stats[bgb].var_e0b06b47;
-	var_8e01583 = self.bgb_stats[bgb].var_b75c376;
+	var_8e01583 = self.bgb_stats[bgb].bgb_used_this_game;
 	var_c6b3f8bc = var_3232aae6 - var_8e01583;
 	return 0 < var_c6b3f8bc;
 }
@@ -558,7 +547,7 @@ function function_b107a7f3(bgb, activating)
 			{
 				self notify("hash_83da9d01", bgb);
 				self function_103ebe74();
-				self thread function_eb4b1160(bgb);
+				self thread run_activation_func(bgb);
 			}
 			else
 			{
@@ -591,22 +580,13 @@ function function_b107a7f3(bgb, activating)
 	return succeeded;
 }
 
-/*
-	Name: function_eb4b1160
-	Namespace: bgb
-	Checksum: 0x4953F724
-	Offset: 0x2288
-	Size: 0xA3
-	Parameters: 1
-	Flags: Private
-*/
-function private function_eb4b1160(bgb)
+function private run_activation_func(bgb)
 {
 	self endon("disconnect");
 	self set_active(true);
 	self do_one_shot_use();
 	self notify("hash_95b677dc");
-	self [[level.bgb[bgb].activation_func]]();
+	self [[ level.bgb[bgb].activation_func ]]();
 	self set_active(false);
 	self activation_complete();
 }
@@ -815,24 +795,20 @@ function private function_f8dba1d1()
 	self thread take();
 }
 
-/*
-	Name: function_7ad7537e
-	Namespace: bgb
-	Checksum: 0xB19D48FE
-	Offset: 0x2CE0
-	Size: 0x6B
-	Parameters: 0
-	Flags: Private
-*/
-function private function_7ad7537e()
+// takes the bgb on "bled_out", but sends notify ahead of time
+function private bgb_bled_out_monitor()
 {
 	self endon("disconnect");
 	self endon("bgb_update");
-	self notify("hash_7ad7537e");
-	self endon("hash_7ad7537e");
+	self notify("bgb_bled_out_monitor");
+	self endon("bgb_bled_out_monitor");
+
 	self waittill("bled_out");
-	self notify("hash_eecacfa5");
-	wait(0.1);
+
+	self notify("bgb_about_to_take_on_bled_out");
+
+	wait(0.1); // need a wait here; otherwise nothing gets a chance to respond to the "bgb_about_to_take_on_bled_out" notify before take() gets called
+
 	self thread take();
 }
 
@@ -1541,7 +1517,7 @@ function give(name)
 		self SetActionSlot(1, "bgb");
 	}
 	self thread function_f8dba1d1();
-	self thread function_7ad7537e();
+	self thread bgb_bled_out_monitor();
 }
 
 /*
