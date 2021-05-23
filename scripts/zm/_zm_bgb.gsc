@@ -12,6 +12,8 @@
 #using scripts\shared\system_shared;
 #using scripts\shared\util_shared;
 
+#insert scripts\shared\shared.gsh;
+
 #using scripts\zm\_zm;
 #using scripts\zm\_zm_audio;
 #using scripts\zm\_zm_bgb;
@@ -29,6 +31,7 @@
 #using scripts\zm\gametypes\_globallogic_score;
 
 #insert scripts\zm\_zm_bgb.gsh
+#insert scripts\zm\_zm_perks.gsh;
 
 #namespace bgb;
 
@@ -101,15 +104,6 @@ function private function_52dbea8c()
 	}
 }
 
-/*
-	Name: bgb_player_init
-	Namespace: bgb
-	Checksum: 0xA7559F80
-	Offset: 0xB38
-	Size: 0x1EB
-	Parameters: 0
-	Flags: Private
-*/
 function private bgb_player_init()
 {
 	if (IsDefined(self.bgb_pack))
@@ -217,7 +211,7 @@ function private bgb_player_monitor()
 		str_return = level util::waittill_any_return("between_round_over", "restart_round");
 		if (IsDefined(level.var_4824bb2d))
 		{
-			if (!(IsDefined(self [[level.var_4824bb2d]]()) && self [[level.var_4824bb2d]]()))
+			if (!IS_TRUE(self [[level.var_4824bb2d]]()))
 			{
 				continue;
 			}
@@ -235,15 +229,6 @@ function private bgb_player_monitor()
 	}
 }
 
-/*
-	Name: setup_devgui
-	Namespace: bgb
-	Checksum: 0x795C8A15
-	Offset: 0x1308
-	Size: 0x263
-	Parameters: 0
-	Flags: Private
-*/
 function private setup_devgui()
 {
 	/#
@@ -252,7 +237,7 @@ function private setup_devgui()
 		SetDvar("Dev Block strings are not supported", -1);
 		var_33b4e7c1 = "Dev Block strings are not supported";
 		keys = GetArrayKeys(level.bgb);
-		foreach(key in keys)
+		foreach (key in keys)
 		{
 			AddDebugCommand(var_33b4e7c1 + key + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + key + "Dev Block strings are not supported");
 		}
@@ -353,15 +338,6 @@ function private function_ef47b774()
 	#/
 }
 
-/*
-	Name: bgb_set_debug_text
-	Namespace: bgb
-	Checksum: 0xAF0B2D35
-	Offset: 0x1878
-	Size: 0x1EF
-	Parameters: 2
-	Flags: Private
-*/
 function private bgb_set_debug_text(name, var_2741876d)
 {
 	/#
@@ -424,24 +400,15 @@ function function_47db72b6(bgb)
 	#/
 }
 
-/*
-	Name: has_consumable_bgb
-	Namespace: bgb
-	Checksum: 0x147B9851
-	Offset: 0x1B70
-	Size: 0x65
-	Parameters: 1
-	Flags: Private
-*/
 function private has_consumable_bgb(bgb)
 {
-	if (!IsDefined(self.bgb_stats[bgb]) || (!IsDefined(level.bgb[bgb].consumable) && level.bgb[bgb].consumable))
+	if (!IsDefined(self.bgb_stats[bgb]) || !IS_TRUE(level.bgb[bgb].consumable))
 	{
-		return 0;
+		return false;
 	}
 	else
 	{
-		return 1;
+		return true;
 	}
 }
 
@@ -512,15 +479,6 @@ function private function_c3e0b2ba(bgb, activating)
 	}
 }
 
-/*
-	Name: bgb_gumball_anim
-	Namespace: bgb
-	Checksum: 0x5B4FDEA6
-	Offset: 0x1EA8
-	Size: 0x3D7
-	Parameters: 2
-	Flags: None
-*/
 function bgb_gumball_anim(bgb, activating)
 {
 	self endon("disconnect");
@@ -547,7 +505,7 @@ function bgb_gumball_anim(bgb, activating)
 		succeeded = true;
 		if (activating)
 		{
-			if (IsDefined(level.bgb[bgb].var_7ea552f4) && level.bgb[bgb].var_7ea552f4 || self function_b616fe7a(1))
+			if (IS_TRUE(level.bgb[bgb].var_7ea552f4) || self function_b616fe7a(true))
 			{
 				self notify("hash_83da9d01", bgb);
 				self activation_start();
@@ -709,7 +667,7 @@ function private bgb_limit_monitor()
 				level.bgb[self.bgb].var_32fa3cb7 = i;
 				if (level.bgb[self.bgb].var_336ffc4e)
 				{
-					function_497386b0();
+					fill_timer();
 				}
 				else
 				{
@@ -729,7 +687,7 @@ function private bgb_limit_monitor()
 			self playsoundtoplayer("zmb_bgb_power_done_delayed", self);
 
 			self set_timer(0, level.bgb[self.bgb].limit);
-			while(IS_TRUE(self.bgb_activation_in_progress))
+			while (IS_TRUE(self.bgb_activation_in_progress))
 			{
 				WAIT_SERVER_FRAME;
 			}
@@ -787,15 +745,6 @@ function private bgb_bled_out_monitor()
 	self thread take();
 }
 
-/*
-	Name: bgb_activation_monitor
-	Namespace: bgb
-	Checksum: 0xB16E64C3
-	Offset: 0x2D58
-	Size: 0xB5
-	Parameters: 0
-	Flags: Private
-*/
 function private bgb_activation_monitor()
 {
 	self endon("disconnect");
@@ -811,10 +760,12 @@ function private bgb_activation_monitor()
 	for(;;)
 	{
 		self waittill("bgb_activation_request");
-		if (!self function_b616fe7a(0))
+
+		if (!self function_b616fe7a(false))
 		{
 			continue;
 		}
+
 		if (self bgb_gumball_anim(self.bgb, true))
 		{
 			self notify("bgb_activation", self.bgb);
@@ -831,21 +782,17 @@ function private bgb_activation_monitor()
 	Parameters: 1
 	Flags: Private
 */
-function private function_b616fe7a(var_5827b083)
+function private function_b616fe7a(var_5827b083 = false)
 {
-	if (!IsDefined(var_5827b083))
-	{
-		var_5827b083 = 0;
-	}
-	var_bb1d9487 = IsDefined(level.bgb[self.bgb].validation_func) && !self [[level.bgb[self.bgb].validation_func]]();
+	var_bb1d9487 = IsDefined(level.bgb[self.bgb].validation_func) && !self [[ level.bgb[self.bgb].validation_func ]]();
 	var_847ec8da = IsDefined(level.var_9cef605e) && !self [[level.var_9cef605e]]();
-	if (!var_5827b083 && (IsDefined(self.IS_DRINKING) && self.IS_DRINKING) || (IsDefined(self.bgb_activation_in_progress) && self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
+	if (!var_5827b083 && IS_TRUE(self.IS_DRINKING) || IS_TRUE(self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
 	{
 		self clientfield::increment_uimodel("bgb_invalid_use");
 		self PlayLocalSound("zmb_bgb_deny_plr");
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
 }
 
 /*
@@ -862,7 +809,8 @@ function private function_5fc6d844(bgb)
 	self endon("disconnect");
 	self endon("bled_out");
 	self endon("bgb_update");
-	if (IsDefined(level.bgb[bgb].var_50fe45f6) && level.bgb[bgb].var_50fe45f6)
+
+	if (IS_TRUE(level.bgb[bgb].var_50fe45f6))
 	{
 		function_650ca64(6);
 	}
@@ -870,7 +818,9 @@ function private function_5fc6d844(bgb)
 	{
 		return;
 	}
+
 	self waittill("bgb_activation_request");
+
 	self thread take();
 }
 
@@ -917,133 +867,58 @@ function function_336ffc4e(name)
 	level.bgb[name].var_336ffc4e = 1;
 }
 
-/*
-	Name: do_one_shot_use
-	Namespace: bgb
-	Checksum: 0x5D7A7D6D
-	Offset: 0x30D8
-	Size: 0x63
-	Parameters: 1
-	Flags: None
-*/
-function do_one_shot_use(skip_demo_bookmark)
+function do_one_shot_use(skip_demo_bookmark = false)
 {
-	if (!IsDefined(skip_demo_bookmark))
-	{
-		skip_demo_bookmark = 0;
-	}
 	self clientfield::increment_uimodel("bgb_one_shot_use");
+
 	if (!skip_demo_bookmark)
 	{
 		demo::bookmark("zm_player_bgb_activate", GetTime(), self);
 	}
 }
 
-/*
-	Name: activation_start
-	Namespace: bgb
-	Checksum: 0xA8BE8A8A
-	Offset: 0x3148
-	Size: 0xF
-	Parameters: 0
-	Flags: Private
-*/
 function private activation_start()
 {
-	self.bgb_activation_in_progress = 1;
+	self.bgb_activation_in_progress = true;
 }
 
-/*
-	Name: function_1565b2f5
-	Namespace: bgb
-	Checksum: 0x3430D9A
-	Offset: 0x3160
-	Size: 0x1D
-	Parameters: 0
-	Flags: Private
-*/
 function private activation_complete()
 {
-	self.bgb_activation_in_progress = 0;
+	self.bgb_activation_in_progress = false;
 	self notify("activation_complete");
 }
 
-/*
-	Name: function_9b5dc008
-	Namespace: bgb
-	Checksum: 0x33259947
-	Offset: 0x3188
-	Size: 0x17
-	Parameters: 1
-	Flags: Private
-*/
 function private set_active(b_active)
 {
 	self.bgb_active = b_active;
 }
 
-/*
-	Name: function_e2bcf80c
-	Namespace: bgb
-	Checksum: 0xDA2694C2
-	Offset: 0x31A8
-	Size: 0x15
-	Parameters: 0
-	Flags: None
-*/
 function get_active()
 {
-	return IsDefined(self.bgb_active) && self.bgb_active;
+	return IS_TRUE(self.bgb_active);
 }
 
-/*
-	Name: is_active
-	Namespace: bgb
-	Checksum: 0x33748679
-	Offset: 0x31C8
-	Size: 0x3D
-	Parameters: 1
-	Flags: None
-*/
 function is_active(name)
 {
 	if (!IsDefined(self.bgb))
 	{
-		return 0;
+		return false;
 	}
-	return self.bgb == name && (IsDefined(self.bgb_active) && self.bgb_active);
+	return self.bgb == name && IS_TRUE(self.bgb_active);
 }
 
-/*
-	Name: is_team_active
-	Namespace: bgb
-	Checksum: 0x74678969
-	Offset: 0x3210
-	Size: 0xA3
-	Parameters: 1
-	Flags: None
-*/
 function is_team_active(name)
 {
-	foreach(player in level.players)
+	foreach (player in level.players)
 	{
 		if (player is_active(name))
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
-/*
-	Name: function_f345a8ce
-	Namespace: bgb
-	Checksum: 0x97E3FEAA
-	Offset: 0x32C0
-	Size: 0x63
-	Parameters: 1
-	Flags: None
-*/
 function increment_ref_count(name)
 {
 	if (!IsDefined(level.bgb[name]))
@@ -1055,15 +930,6 @@ function increment_ref_count(name)
 	return var_ad8303b0;
 }
 
-/*
-	Name: function_72936116
-	Namespace: bgb
-	Checksum: 0x1DC94792
-	Offset: 0x3330
-	Size: 0x51
-	Parameters: 1
-	Flags: None
-*/
 function decrement_ref_count(name)
 {
 	if (!IsDefined(level.bgb[name]))
@@ -1074,18 +940,9 @@ function decrement_ref_count(name)
 	return level.bgb[name].ref_count;
 }
 
-/*
-	Name: calc_remaining_duration_lerp
-	Namespace: bgb
-	Checksum: 0xAF7D7B74
-	Offset: 0x3390
-	Size: 0x91
-	Parameters: 2
-	Flags: Private
-*/
 function private calc_remaining_duration_lerp(start_time, end_time)
 {
-	if (0 >= end_time - start_time)
+	if (end_time - start_time <= 0)
 	{
 		return 0;
 	}
@@ -1110,7 +967,7 @@ function private function_f9fad8b3(var_eeab9300, percent)
 	start_time = GetTime();
 	end_time = start_time + 1000;
 	var_6d8b0ec7 = var_eeab9300;
-	while(var_6d8b0ec7 > percent)
+	while (var_6d8b0ec7 > percent)
 	{
 		var_6d8b0ec7 = LerpFloat(percent, var_eeab9300, calc_remaining_duration_lerp(start_time, end_time));
 		self clientfield::set_player_uimodel("bgb_timer", var_6d8b0ec7);
@@ -1132,29 +989,11 @@ function private bgb_set_timer_clientfield(percent)
 	}
 }
 
-/*
-	Name: function_497386b0
-	Namespace: bgb
-	Checksum: 0x84F0B914
-	Offset: 0x35C8
-	Size: 0x1B
-	Parameters: 0
-	Flags: Private
-*/
-function private function_497386b0()
+function private fill_timer()
 {
 	self bgb_set_timer_clientfield(1);
 }
 
-/*
-	Name: set_timer
-	Namespace: bgb
-	Checksum: 0x425FDFE8
-	Offset: 0x35F0
-	Size: 0x33
-	Parameters: 2
-	Flags: None
-*/
 function set_timer(current, max)
 {
 	self bgb_set_timer_clientfield(current / max);
@@ -1176,30 +1015,12 @@ function run_timer(max)
 	self clear_timer();
 }
 
-/*
-	Name: clear_timer
-	Namespace: bgb
-	Checksum: 0xA40ABFCD
-	Offset: 0x36D8
-	Size: 0x29
-	Parameters: 0
-	Flags: None
-*/
 function clear_timer()
 {
 	self bgb_set_timer_clientfield(0);
 	self notify("bgb_run_timer");
 }
 
-/*
-	Name: register
-	Namespace: bgb
-	Checksum: 0x294E0264
-	Offset: 0x3710
-	Size: 0x52F
-	Parameters: 7
-	Flags: None
-*/
 function register(name, limit_type, limit, enable_func, disable_func, validation_func, activation_func)
 {
 	/#
@@ -1435,28 +1256,24 @@ function give(name)
 	self thread bgb_bled_out_monitor();
 }
 
-/*
-	Name: take
-	Namespace: bgb
-	Checksum: 0x1CE0D3EE
-	Offset: 0x42A0
-	Size: 0xF7
-	Parameters: 0
-	Flags: None
-*/
 function take()
 {
 	if ("none" == self.bgb)
 	{
 		return;
 	}
+
 	self SetActionSlot(1, "");
+
 	self thread bgb_set_debug_text("none");
+
 	if (IsDefined(level.bgb[self.bgb].disable_func))
 	{
-		self thread [[level.bgb[self.bgb].disable_func]]();
+		self thread [[ level.bgb[self.bgb].disable_func ]]();
 	}
+
 	self bgb_clear_monitors_and_clientfields();
+
 	self notify("bgb_update", "none", self.bgb);
 	self notify("bgb_update_take_" + self.bgb);
 	self.bgb = "none";
@@ -1767,9 +1584,9 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 	self endon("bled_out");
 	self endon("bgb_update");
 	self.var_6638f10b = [];
-	while(1)
+	for(;;)
 	{
-		foreach(e_player in level.players)
+		foreach (e_player in level.players)
 		{
 			if (e_player == self)
 			{
@@ -1811,7 +1628,7 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 */
 function private function_2469cfe8(n_distance, var_d21815c4, var_441f84ff)
 {
-	var_31dc18aa = n_distance * n_distance;
+	var_31dc18aa = SQR(n_distance);
 	var_2931dc75 = DistanceSquared(var_d21815c4.origin, var_441f84ff.origin);
 	if (var_2931dc75 <= var_31dc18aa)
 	{
@@ -1835,43 +1652,16 @@ function function_ca189700()
 	self PlayLocalSound("zmb_bgb_deny_plr");
 }
 
-/*
-	Name: suspend_weapon_cycling
-	Namespace: bgb
-	Checksum: 0xBB0CA501
-	Offset: 0x5598
-	Size: 0x23
-	Parameters: 0
-	Flags: None
-*/
 function suspend_weapon_cycling()
 {
 	self flag::clear("bgb_weapon_cycling");
 }
 
-/*
-	Name: resume_weapon_cycling
-	Namespace: bgb
-	Checksum: 0x5E7C3417
-	Offset: 0x55C8
-	Size: 0x23
-	Parameters: 0
-	Flags: None
-*/
 function resume_weapon_cycling()
 {
 	self flag::set("bgb_weapon_cycling");
 }
 
-/*
-	Name: init_weapon_cycling
-	Namespace: bgb
-	Checksum: 0xEE0C457D
-	Offset: 0x55F8
-	Size: 0x63
-	Parameters: 0
-	Flags: None
-*/
 function init_weapon_cycling()
 {
 	if (!self flag::exists("bgb_weapon_cycling"))
@@ -1881,40 +1671,38 @@ function init_weapon_cycling()
 	self flag::set("bgb_weapon_cycling");
 }
 
-/*
-	Name: function_378bff5d
-	Namespace: bgb
-	Checksum: 0xACCEF0B8
-	Offset: 0x5668
-	Size: 0x23
-	Parameters: 0
-	Flags: None
-*/
-function function_378bff5d()
+function weapon_cycling_waittill_active()
 {
 	self flag::wait_till("bgb_weapon_cycling");
 }
 
 function function_41ed378b(perk)
 {
-	self notify("revive_and_return_perk_on_bgb_activation" + perk);
-	self endon("revive_and_return_perk_on_bgb_activation" + perk);
 	self endon("disconnect");
 	self endon("bled_out");
-	if (perk == "specialty_widowswine")
+	
+	self notify("revive_and_return_perk_on_bgb_activation" + perk);
+	self endon("revive_and_return_perk_on_bgb_activation" + perk);
+	
+	if (perk == PERK_WIDOWS_WINE)
 	{
 		var_376ad33c = self GetWeaponAmmoClip(self.current_lethal_grenade);
 	}
+
 	self waittill("player_revived", e_reviver);
+
 	if (IS_TRUE(self.var_df0decf1) || (IsDefined(e_reviver) && (IsDefined(self.bgb) && self is_enabled("zm_bgb_near_death_experience")) || (IsDefined(e_reviver.bgb) && e_reviver is_enabled("zm_bgb_near_death_experience"))))
 	{
-		if (zm_perks::use_solo_revive() && perk == "specialty_quickrevive")
+		if (zm_perks::use_solo_revive() && perk == PERK_QUICK_REVIVE)
 		{
 			level.solo_game_free_player_quickrevive = 1;
 		}
+
 		WAIT_SERVER_FRAME;
+
 		self thread zm_perks::give_perk(perk, false);
-		if (perk == "specialty_widowswine" && IsDefined(var_376ad33c))
+
+		if (perk == PERK_WIDOWS_WINE && IsDefined(var_376ad33c))
 		{
 			self SetWeaponAmmoClip(self.current_lethal_grenade, var_376ad33c);
 		}
@@ -1934,13 +1722,16 @@ function function_7d63d2eb()
 {
 	self endon("disconnect");
 	self endon("death");
+
 	self.var_df0decf1 = true;
+
 	self waittill("player_revived", e_reviver);
+
 	WAIT_SERVER_FRAME;
+	
 	if (IS_TRUE(self.var_df0decf1))
 	{
 		self notify("bgb_revive");
 		self.var_df0decf1 = undefined;
 	}
 }
-
