@@ -562,6 +562,7 @@ function bgb_gumball_anim(bgb, activating)
 function private run_activation_func(bgb)
 {
 	self endon("disconnect");
+
 	self set_active(true);
 	self do_one_shot_use();
 	self notify("hash_95b677dc");
@@ -585,7 +586,7 @@ function private bgb_play_gumball_anim_begin(bgb, activating)
 
 	self zm_utility::disable_player_move_states(true);
 
-	var_e3d21ca6 = self GetCurrentWeapon();
+	w_original = self GetCurrentWeapon();
 
 	weapon = bgb_get_gumball_anim_weapon(bgb, activating);
 
@@ -602,16 +603,16 @@ function private bgb_play_gumball_anim_begin(bgb, activating)
 		self clientfield::increment_to_player("bgb_blow_bubble");
 	}
 
-	return var_e3d21ca6;
+	return w_original;
 }
 
-function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
+function private bgb_play_gumball_anim_end(w_original, bgb, activating)
 {
 	/#
-		Assert(!var_e3d21ca6.isPerkBottle);
+		Assert(!w_original.isPerkBottle);
 	#/
 	/#
-		Assert(var_e3d21ca6 != level.weaponReviveTool);
+		Assert(w_original != level.weaponReviveTool);
 	#/
 
 	self zm_utility::enable_player_move_states();
@@ -631,10 +632,10 @@ function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
 		self zm_utility::decrement_is_drinking();
 		return;
 	}
-	else if (var_e3d21ca6 != level.weaponNone && !zm_utility::is_placeable_mine(var_e3d21ca6) && !zm_equipment::is_equipment_that_blocks_purchase(var_e3d21ca6))
+	else if (w_original != level.weaponNone && !zm_utility::is_placeable_mine(w_original) && !zm_equipment::is_equipment_that_blocks_purchase(w_original))
 	{
-		self zm_weapons::switch_back_primary_weapon(var_e3d21ca6);
-		if (zm_utility::is_melee_weapon(var_e3d21ca6))
+		self zm_weapons::switch_back_primary_weapon(w_original);
+		if (zm_utility::is_melee_weapon(w_original))
 		{
 			self zm_utility::decrement_is_drinking();
 			return;
@@ -698,10 +699,10 @@ function private bgb_limit_monitor()
 				{
 					WAIT_SERVER_FRAME;
 				}
-				self playsoundtoplayer("zmb_bgb_power_decrement", self);
+				self PlaySoundToPlayer("zmb_bgb_power_decrement", self);
 			}
 			level.bgb[self.bgb].var_32fa3cb7 = 0;
-			self playsoundtoplayer("zmb_bgb_power_done_delayed", self);
+			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 
 			self set_timer(0, level.bgb[self.bgb].limit);
 			while (IS_TRUE(self.bgb_activation_in_progress))
@@ -714,7 +715,7 @@ function private bgb_limit_monitor()
 			self thread bgb_set_debug_text(self.bgb);
 			self thread run_timer(level.bgb[self.bgb].limit);
 			wait(level.bgb[self.bgb].limit);
-			self playsoundtoplayer("zmb_bgb_power_done", self);
+			self PlaySoundToPlayer("zmb_bgb_power_done", self);
 			break;
 
 		case "rounds":
@@ -724,16 +725,16 @@ function private bgb_limit_monitor()
 			{
 				self set_timer(count - i, count);
 				level waittill("end_of_round");
-				self playsoundtoplayer("zmb_bgb_power_decrement", self);
+				self PlaySoundToPlayer("zmb_bgb_power_decrement", self);
 			}
-			self playsoundtoplayer("zmb_bgb_power_done_delayed", self);
+			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 			break;
 
 		case "event":
 			self thread bgb_set_debug_text(self.bgb);
 			self bgb_set_timer_clientfield(1);
 			self [[ level.bgb[self.bgb].limit ]]();
-			self playsoundtoplayer("zmb_bgb_power_done_delayed", self);
+			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 			break;
 
 		default:
@@ -921,6 +922,7 @@ function is_active(name)
 	{
 		return false;
 	}
+
 	return self.bgb == name && IS_TRUE(self.bgb_active);
 }
 
@@ -942,6 +944,7 @@ function increment_ref_count(name)
 	{
 		return 0;
 	}
+
 	var_ad8303b0 = level.bgb[name].ref_count;
 	level.bgb[name].ref_count++;
 	return var_ad8303b0;
@@ -953,6 +956,7 @@ function decrement_ref_count(name)
 	{
 		return 0;
 	}
+
 	level.bgb[name].ref_count--;
 	return level.bgb[name].ref_count;
 }
@@ -963,6 +967,7 @@ function private calc_remaining_duration_lerp(start_time, end_time)
 	{
 		return 0;
 	}
+	
 	now = GetTime();
 	frac = float(end_time - now) / float(end_time - start_time);
 	return math::clamp(frac, 0, 1);
@@ -1335,16 +1340,7 @@ function is_team_enabled(str_name)
 	return false;
 }
 
-/*
-	Name: function_c219b050
-	Namespace: bgb
-	Checksum: 0x1DB6D96
-	Offset: 0x4508
-	Size: 0x87
-	Parameters: 0
-	Flags: None
-*/
-function function_c219b050()
+function get_player_dropped_powerup_origin()
 {
 	powerup_origin = self.origin + VectorScale(AnglesToForward((0, self GetPlayerAngles()[1], 0)), 60) + VectorScale((0, 0, 1), 5);
 	self zm_stats::increment_challenge_stat("GUM_GOBBLER_POWERUPS");
@@ -1364,7 +1360,7 @@ function function_dea74fb0(str_powerup, v_origin)
 {
 	if (!IsDefined(v_origin))
 	{
-		v_origin = self function_c219b050();
+		v_origin = self get_player_dropped_powerup_origin();
 	}
 
 	e_powerup = zm_powerups::specific_powerup_drop(str_powerup, v_origin);
@@ -1393,7 +1389,7 @@ function function_434235f9(e_powerup)
 		return;
 	}
 
-	e_powerup ghost();
+	e_powerup Ghost();
 	e_powerup.clone_model = util::spawn_model(e_powerup.model, e_powerup.origin, e_powerup.angles);
 	e_powerup.clone_model LinkTo(e_powerup);
 
@@ -1709,7 +1705,7 @@ function weapon_cycling_waittill_active()
 	self flag::wait_till("bgb_weapon_cycling");
 }
 
-function function_41ed378b(perk)
+function revive_and_return_perk_on_bgb_activation(perk)
 {
 	self endon("disconnect");
 	self endon("bled_out");
