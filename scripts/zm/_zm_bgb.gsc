@@ -32,6 +32,7 @@
 
 #insert scripts\zm\_zm_bgb.gsh
 #insert scripts\zm\_zm_perks.gsh;
+#insert scripts\zm\_zm_utility.gsh;
 
 #namespace bgb;
 
@@ -96,7 +97,7 @@ function private on_player_spawned()
 
 function private function_52dbea8c()
 {
-	if (!(IsDefined(self.var_c2d95bad) && self.var_c2d95bad))
+	if (!IS_TRUE(self.var_c2d95bad))
 	{
 		self.var_c2d95bad = 1;
 		self globallogic_score::initPersStat("bgb_tokens_gained_this_game", 0);
@@ -168,6 +169,7 @@ function private bgb_end_game()
 		{
 			continue;
 		}
+
 		level flag::set("consumables_reported");
 		zm_utility::increment_zm_dash_counter("end_consumables_count", self.bgb_stats[bgb].bgb_used_this_game);
 		self function_99b36259(bgb, self.bgb_stats[bgb].bgb_used_this_game);
@@ -211,7 +213,7 @@ function private bgb_player_monitor()
 		str_return = level util::waittill_any_return("between_round_over", "restart_round");
 		if (IsDefined(level.var_4824bb2d))
 		{
-			if (!IS_TRUE(self [[level.var_4824bb2d]]()))
+			if (!IS_TRUE(self [[ level.var_4824bb2d ]]()))
 			{
 				continue;
 			}
@@ -428,7 +430,7 @@ function function_66a597c1(bgb)
 		return;
 	}
 
-	if (IsDefined(level.bgb[bgb].var_35e23ba2) && ![[level.bgb[bgb].var_35e23ba2]]())
+	if (IsDefined(level.bgb[bgb].var_35e23ba2) && ![[ level.bgb[bgb].var_35e23ba2 ]]())
 	{
 		return;
 	}
@@ -471,15 +473,18 @@ function get_bgb_available(bgb)
 	Parameters: 2
 	Flags: Private
 */
-function private function_c3e0b2ba(bgb, activating)
+function private function_c3e0b2ba(bgb)
 {
-	if (!(IsDefined(level.bgb[bgb].var_7ca0e2a7) && level.bgb[bgb].var_7ca0e2a7))
+	if (!IS_TRUE(level.bgb[bgb].var_7ca0e2a7))
 	{
 		return;
 	}
+
 	var_b0106e56 = self EnableInvulnerability();
+
 	self util::waittill_any_timeout(2, "bgb_bubble_blow_complete");
-	if (IsDefined(self) && (!IsDefined(var_b0106e56) && var_b0106e56))
+
+	if (IsDefined(self) && var_b0106e56)
 	{
 		self DisableInvulnerability();
 	}
@@ -613,7 +618,7 @@ function private bgb_play_gumball_anim_end(var_e3d21ca6, bgb, activating)
 
 	weapon = bgb_get_gumball_anim_weapon(bgb, activating);
 
-	if (self laststand::player_is_in_laststand() || (IsDefined(self.intermission) && self.intermission))
+	if (self laststand::player_is_in_laststand() || IS_TRUE(self.intermission))
 	{
 		self TakeWeapon(weapon);
 		return;
@@ -727,7 +732,7 @@ function private bgb_limit_monitor()
 		case "event":
 			self thread bgb_set_debug_text(self.bgb);
 			self bgb_set_timer_clientfield(1);
-			self [[level.bgb[self.bgb].limit]]();
+			self [[ level.bgb[self.bgb].limit ]]();
 			self playsoundtoplayer("zmb_bgb_power_done_delayed", self);
 			break;
 
@@ -794,11 +799,11 @@ function private bgb_activation_monitor()
 	Parameters: 1
 	Flags: Private
 */
-function private function_b616fe7a(var_5827b083 = false)
+function private function_b616fe7a(b_chewing = false)
 {
 	var_bb1d9487 = IsDefined(level.bgb[self.bgb].validation_func) && !self [[ level.bgb[self.bgb].validation_func ]]();
-	var_847ec8da = IsDefined(level.var_9cef605e) && !self [[level.var_9cef605e]]();
-	if (!var_5827b083 && IS_TRUE(self.IS_DRINKING) || IS_TRUE(self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
+	var_847ec8da = IsDefined(level.var_9cef605e) && !self [[ level.var_9cef605e ]]();
+	if (!b_chewing && IS_DRINKING(self.is_drinking) || IS_TRUE(self.bgb_activation_in_progress) || self laststand::player_is_in_laststand() || var_bb1d9487 || var_847ec8da)
 	{
 		self clientfield::increment_uimodel("bgb_invalid_use");
 		self PlayLocalSound("zmb_bgb_deny_plr");
@@ -876,7 +881,7 @@ function function_eabb0903(n_value)
 */
 function function_336ffc4e(name)
 {
-	level.bgb[name].var_336ffc4e = 1;
+	level.bgb[name].var_336ffc4e = true;
 }
 
 function do_one_shot_use(skip_demo_bookmark = false)
@@ -1102,7 +1107,7 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 	{
 		level.bgb[name].validation_func = validation_func;
 		level.bgb[name].activation_func = activation_func;
-		level.bgb[name].var_336ffc4e = 0;
+		level.bgb[name].var_336ffc4e = false;
 	}
 	level.bgb[name].ref_count = 0;
 }
@@ -1341,9 +1346,9 @@ function is_team_enabled(str_name)
 */
 function function_c219b050()
 {
-	var_587cd8a0 = self.origin + VectorScale(AnglesToForward((0, self getPlayerAngles()[1], 0)), 60) + VectorScale((0, 0, 1), 5);
+	powerup_origin = self.origin + VectorScale(AnglesToForward((0, self GetPlayerAngles()[1], 0)), 60) + VectorScale((0, 0, 1), 5);
 	self zm_stats::increment_challenge_stat("GUM_GOBBLER_POWERUPS");
-	return var_587cd8a0;
+	return powerup_origin;
 }
 
 /*
@@ -1424,14 +1429,15 @@ function function_434235f9(e_powerup)
 
 	if (IsDefined(self.damagearea))
 	{
-		self.damagearea delete();
+		self.damagearea Delete();
 	}
-	e_powerup.clone_model delete();
+
+	e_powerup.clone_model Delete();
 	if (IsDefined(e_powerup))
 	{
 		if (IsDefined(e_powerup.damagearea))
 		{
-			e_powerup.damagearea delete();
+			e_powerup.damagearea Delete();
 		}
 		e_powerup zm_powerups::powerup_delete();
 	}
@@ -1557,12 +1563,12 @@ function add_to_player_score_override(n_points, str_awarded_by)
 		}
 		if (IS_TRUE(level.bgb[str_bgb].add_to_player_score_override_func_always_run) && IsDefined(level.bgb[str_bgb].add_to_player_score_override_func))
 		{
-			n_points = [[ level.bgb[str_bgb].add_to_player_score_override_func ]](n_points, str_awarded_by, 0);
+			n_points = [[ level.bgb[str_bgb].add_to_player_score_override_func ]](n_points, str_awarded_by, false);
 		}
 	}
 	if (str_enabled !== "none" && IsDefined(level.bgb[str_enabled]) && IsDefined(level.bgb[str_enabled].add_to_player_score_override_func))
 	{
-		n_points = [[ level.bgb[str_enabled].add_to_player_score_override_func ]](n_points, str_awarded_by, 1);
+		n_points = [[ level.bgb[str_enabled].add_to_player_score_override_func ]](n_points, str_awarded_by, true);
 	}
 	return n_points;
 }
@@ -1627,7 +1633,7 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 				array::add(self.var_6638f10b, e_player, false);
 				if (IsDefined(var_98a3e738))
 				{
-					self thread [[var_98a3e738]](e_player);
+					self thread [[ var_98a3e738 ]](e_player);
 				}
 				continue;
 			}
@@ -1636,7 +1642,7 @@ function function_4ed517b9(n_max_distance, var_98a3e738, var_287a7adb)
 				ArrayRemoveValue(self.var_6638f10b, e_player);
 				if (IsDefined(var_287a7adb))
 				{
-					self thread [[var_287a7adb]](e_player);
+					self thread [[ var_287a7adb ]](e_player);
 				}
 			}
 		}
