@@ -158,7 +158,7 @@ function private bgb_end_game()
 	// - take any bgb that the player is carrying
 	self thread take();
 
-	self function_e1f3d6d7();
+	self __protected__reportnotedloot();
 	self zm_stats::set_global_stat("bgb_tokens_gained_this_game", self.var_f191a1fc);
 
 	// - add count of bgbs used this game to the player's stat
@@ -296,9 +296,9 @@ function private function_dea9a9da(var_a961d470)
 				players[i] thread take();
 				continue;
 			}
-			function_594d2bdf(1);
+			__protected__setbgbunlocked(1);
 			players[i] thread bgb_gumball_anim(var_a961d470, false);
-			function_594d2bdf(0);
+			__protected__setbgbunlocked(0);
 		}
 	#/
 }
@@ -487,7 +487,7 @@ function bgb_gumball_anim(bgb, activating)
 	self endon("disconnect");
 	level endon("end_game");
 
-	unlocked = function_64f7cbc3();
+	unlocked = __protected__getbgbunlocked();
 	if (activating)
 	{
 		self thread function_c3e0b2ba(bgb);
@@ -525,7 +525,7 @@ function bgb_gumball_anim(bgb, activating)
 			return false;
 		}
 
-		self notify("hash_fcbbef99", bgb);
+		self notify("bgb_gumball_anim_give", bgb);
 		self thread give(bgb);
 
 		self zm_stats::increment_client_stat("bgbs_chewed");
@@ -557,7 +557,7 @@ function private run_activation_func(bgb)
 
 	self set_active(true);
 	self do_one_shot_use();
-	self notify("hash_95b677dc");
+	self notify("bgb_bubble_blow_complete");
 	self [[ level.bgb[bgb].activation_func ]]();
 	self set_active(false);
 	self activation_complete();
@@ -1230,7 +1230,7 @@ function function_f132da9c(name)
 */
 function function_d35f60a1(name)
 {
-	unlocked = function_64f7cbc3();
+	unlocked = __protected__getbgbunlocked();
 	if (unlocked)
 	{
 		self give(name);
