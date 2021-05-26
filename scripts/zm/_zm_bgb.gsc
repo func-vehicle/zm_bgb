@@ -99,9 +99,9 @@ function private function_52dbea8c()
 {
 	if (!IS_TRUE(self.var_c2d95bad))
 	{
-		self.var_c2d95bad = 1;
+		self.var_c2d95bad = true;
 		self globallogic_score::initPersStat("bgb_tokens_gained_this_game", 0);
-		self.var_f191a1fc = 0;
+		self.bgb_tokens_gained_this_game = 0;
 	}
 }
 
@@ -122,12 +122,14 @@ function private bgb_player_init()
 		{
 			continue;
 		}
+
 		if (!IS_TRUE(level.bgb[bgb].consumable))
 		{
 			continue;
 		}
+
 		self.bgb_stats[bgb] = SpawnStruct();
-		self.bgb_stats[bgb].var_e0b06b47 = self GetBGBRemaining(bgb);
+		self.bgb_stats[bgb].bgb_available_at_start = self GetBGBRemaining(bgb);
 		self.bgb_stats[bgb].bgb_used_this_game = 0;
 	}
 
@@ -159,7 +161,7 @@ function private bgb_end_game()
 	self thread take();
 
 	self __protected__ReportNotedLoot();
-	self zm_stats::set_global_stat("bgb_tokens_gained_this_game", self.var_f191a1fc);
+	self zm_stats::set_global_stat("bgb_tokens_gained_this_game", self.bgb_tokens_gained_this_game);
 
 	// - add count of bgbs used this game to the player's stat
 	foreach (bgb in self.bgb_pack)
@@ -172,7 +174,7 @@ function private bgb_end_game()
 
 		level flag::set("consumables_reported");
 		zm_utility::increment_zm_dash_counter("end_consumables_count", self.bgb_stats[bgb].bgb_used_this_game);
-		self function_99b36259(bgb, self.bgb_stats[bgb].bgb_used_this_game);
+		self ReportLootConsume(bgb, self.bgb_stats[bgb].bgb_used_this_game);
 	}
 	self flag::set("finished_reporting_consumables");
 }
@@ -239,7 +241,7 @@ function private setup_devgui()
 {
 	/#
 		waittillframeend;
-		SetDvar("Dev Block strings are not supported", "Dev Block strings are not supported");
+		SetDvar("bgb_acquire_devgui", "");
 		SetDvar("Dev Block strings are not supported", -1);
 
 		bgb_devgui_base = "devgui_cmd \"ZM/BGB/";
@@ -267,27 +269,18 @@ function private bgb_devgui_think()
 	/#
 		for(;;)
 		{
-			var_fe9a7d67 = GetDvarString("Dev Block strings are not supported");
-			if (var_fe9a7d67 != "Dev Block strings are not supported")
+			bgb_acquire_name = GetDvarString("bgb_acquire_devgui");
+			if (bgb_acquire_name != "")
 			{
-				function_dea9a9da(var_fe9a7d67);
+				bgb_devgui_acquire(bgb_acquire_name);
 			}
-			SetDvar("Dev Block strings are not supported", "Dev Block strings are not supported");
+			SetDvar("bgb_acquire_devgui", "");
 			wait(0.5);
 		}
 	#/
 }
 
-/*
-	Name: function_dea9a9da
-	Namespace: bgb
-	Checksum: 0xAB92DEAA
-	Offset: 0x1600
-	Size: 0x11D
-	Parameters: 1
-	Flags: Private
-*/
-function private function_dea9a9da(var_a961d470)
+function private bgb_devgui_acquire(bgb_name)
 {
 	/#
 		var_a7032a9 = GetDvarInt("Dev Block strings are not supported");
@@ -298,14 +291,14 @@ function private function_dea9a9da(var_a961d470)
 			{
 				continue;
 			}
-			if ("none" == var_a961d470)
+			if ("none" == bgb_name)
 			{
 				players[i] thread take();
 				continue;
 			}
-			__protected__SetBGBUnlocked(1);
-			players[i] thread bgb_gumball_anim(var_a961d470, false);
-			__protected__SetBGBUnlocked(0);
+			__protected__SetBGBUnlocked(true);
+			players[i] thread bgb_gumball_anim(bgb_name, false);
+			__protected__SetBGBUnlocked(false);
 		}
 	#/
 }
@@ -386,9 +379,9 @@ function private bgb_set_debug_text(name, activations_remaining)
 function bgb_print_stats(bgb)
 {
 	/#
-		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].var_e0b06b47, (1, 1, 1));
+		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].bgb_available_at_start, (1, 1, 1));
 		PrintTopRightln( bgb + " used_this_session: " + self.bgb_stats[ bgb ].bgb_used_this_game, ( 1, 1, 1 ) );
-		n_available = self.bgb_stats[bgb].var_e0b06b47 - self.bgb_stats[bgb].bgb_used_this_game;
+		n_available = self.bgb_stats[bgb].bgb_available_at_start - self.bgb_stats[bgb].bgb_used_this_game;
 		PrintTopRightln( bgb + " available: " + n_available, ( 1, 1, 1 ) );
 	#/
 }
@@ -410,6 +403,7 @@ function private has_consumable_bgb(bgb)
 // self = player
 function sub_consumable_bgb(bgb)
 {
+	// if this isn't a consumable bgb, ignore
 	if (!has_consumable_bgb(bgb))
 	{
 		return;
@@ -448,9 +442,9 @@ function get_bgb_available(bgb)
 	}
 
 	// consumable test
-	var_3232aae6 = self.bgb_stats[bgb].var_e0b06b47;
+	n_bgb_available_at_start = self.bgb_stats[bgb].bgb_available_at_start;
 	n_bgb_used_this_game = self.bgb_stats[bgb].bgb_used_this_game;
-	n_bgb_remaining = var_3232aae6 - n_bgb_used_this_game;
+	n_bgb_remaining = n_bgb_available_at_start - n_bgb_used_this_game;
 	return n_bgb_remaining > 0; // return availability
 }
 
@@ -1666,7 +1660,7 @@ function revive_and_return_perk_on_bgb_activation(perk)
 	{
 		if (zm_perks::use_solo_revive() && perk == PERK_QUICK_REVIVE)
 		{
-			level.solo_game_free_player_quickrevive = 1;
+			level.solo_game_free_player_quickrevive = true;
 		}
 
 		WAIT_SERVER_FRAME;
