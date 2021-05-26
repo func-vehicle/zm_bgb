@@ -158,7 +158,7 @@ function private bgb_end_game()
 	// - take any bgb that the player is carrying
 	self thread take();
 
-	self __protected__reportnotedloot();
+	self __protected__ReportNotedLoot();
 	self zm_stats::set_global_stat("bgb_tokens_gained_this_game", self.var_f191a1fc);
 
 	// - add count of bgbs used this game to the player's stat
@@ -184,7 +184,9 @@ function private bgb_finalize()
 	for (i = 0; i < keys.size; i++)
 	{
 		level.bgb[keys[i]].item_index = GetItemIndexFromRef(keys[i]);
+
 		level.bgb[keys[i]].rarity = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 16));
+
 		if (level.bgb[keys[i]].rarity == BGB_RARITY_CLASSIC_INDEX || level.bgb[keys[i]].rarity == BGB_RARITY_WHIMSICAL_INDEX)
 		{
 			level.bgb[keys[i]].consumable = false;
@@ -193,7 +195,9 @@ function private bgb_finalize()
 		{
 			level.bgb[keys[i]].consumable = true;
 		}
+
 		level.bgb[keys[i]].camo_index = Int(TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 5));
+
 		var_cf65a2c0 = TableLookup(statsTableName, 0, level.bgb[keys[i]].item_index, 15);
 		if (IsSubStr(var_cf65a2c0, "dlc"))
 		{
@@ -237,7 +241,8 @@ function private setup_devgui()
 		waittillframeend;
 		SetDvar("Dev Block strings are not supported", "Dev Block strings are not supported");
 		SetDvar("Dev Block strings are not supported", -1);
-		bgb_devgui_base = "Dev Block strings are not supported";
+
+		bgb_devgui_base = "devgui_cmd \"ZM/BGB/";
 		keys = GetArrayKeys(level.bgb);
 		foreach (key in keys)
 		{
@@ -246,11 +251,13 @@ function private setup_devgui()
 
 		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
 		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
+
 		for (i = 0; i < 4; i++)
 		{
 			playerNum = i + 1;
 			AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + playerNum + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + i + "Dev Block strings are not supported");
 		}
+
 		level thread bgb_devgui_think();
 	#/
 }
@@ -291,14 +298,14 @@ function private function_dea9a9da(var_a961d470)
 			{
 				continue;
 			}
-			if ("Dev Block strings are not supported" == var_a961d470)
+			if ("none" == var_a961d470)
 			{
 				players[i] thread take();
 				continue;
 			}
-			__protected__setbgbunlocked(1);
+			__protected__SetBGBUnlocked(1);
 			players[i] thread bgb_gumball_anim(var_a961d470, false);
-			__protected__setbgbunlocked(0);
+			__protected__SetBGBUnlocked(0);
 		}
 	#/
 }
@@ -375,25 +382,18 @@ function private bgb_set_debug_text(name, activations_remaining)
 	#/
 }
 
-/*
-	Name: function_47db72b6
-	Namespace: bgb
-	Checksum: 0x5B63E5FA
-	Offset: 0x1A70
-	Size: 0xF3
-	Parameters: 1
-	Flags: None
-*/
-function function_47db72b6(bgb)
+// self = player
+function bgb_print_stats(bgb)
 {
 	/#
 		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].var_e0b06b47, (1, 1, 1));
-		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].bgb_used_this_game, (1, 1, 1));
-		var_e4140345 = self.bgb_stats[bgb].var_e0b06b47 - self.bgb_stats[bgb].bgb_used_this_game;
-		PrintTopRightln(bgb + "Dev Block strings are not supported" + var_e4140345, (1, 1, 1));
+		PrintTopRightln( bgb + " used_this_session: " + self.bgb_stats[ bgb ].bgb_used_this_game, ( 1, 1, 1 ) );
+		n_available = self.bgb_stats[bgb].var_e0b06b47 - self.bgb_stats[bgb].bgb_used_this_game;
+		PrintTopRightln( bgb + " available: " + n_available, ( 1, 1, 1 ) );
 	#/
 }
 
+// check if player has a bgb in their pack, and if the bgb is consumable
 function private has_consumable_bgb(bgb)
 {
 	if (!IsDefined(self.bgb_stats[bgb]) || !IS_TRUE(level.bgb[bgb].consumable))
@@ -406,16 +406,9 @@ function private has_consumable_bgb(bgb)
 	}
 }
 
-/*
-	Name: function_66a597c1
-	Namespace: bgb
-	Checksum: 0xA2DCCF17
-	Offset: 0x1BE0
-	Size: 0x153
-	Parameters: 1
-	Flags: None
-*/
-function function_66a597c1(bgb)
+// subtract one from the player's count of a consumable bgb (adds to bgb_used)
+// self = player
+function sub_consumable_bgb(bgb)
 {
 	if (!has_consumable_bgb(bgb))
 	{
@@ -440,20 +433,25 @@ function function_66a597c1(bgb)
 	self LUINotifyEvent(&"zombie_bgb_used", 1, level.bgb[bgb].item_index);
 
 	/#
-		function_47db72b6(bgb);
+		bgb_print_stats(bgb);
 	#/
 }
 
+// return true if the named bgb is available, false if not (activates ghost ball effect in bgb machine)
+// self = player
 function get_bgb_available(bgb)
 {
+	// if .bgb_stats entry doesn't exist, the bgb is non-consumable
 	if (!IsDefined(self.bgb_stats[bgb]))
 	{
 		return true;
 	}
+
+	// consumable test
 	var_3232aae6 = self.bgb_stats[bgb].var_e0b06b47;
-	var_8e01583 = self.bgb_stats[bgb].bgb_used_this_game;
-	var_c6b3f8bc = var_3232aae6 - var_8e01583;
-	return var_c6b3f8bc > 0;
+	n_bgb_used_this_game = self.bgb_stats[bgb].bgb_used_this_game;
+	n_bgb_remaining = var_3232aae6 - n_bgb_used_this_game;
+	return n_bgb_remaining > 0; // return availability
 }
 
 /*
@@ -487,7 +485,7 @@ function bgb_gumball_anim(bgb, activating)
 	self endon("disconnect");
 	level endon("end_game");
 
-	unlocked = __protected__getbgbunlocked();
+	unlocked = __protected__GetBGBUnlocked();
 	if (activating)
 	{
 		self thread function_c3e0b2ba(bgb);
@@ -547,6 +545,8 @@ function bgb_gumball_anim(bgb, activating)
 			util::function_a4c90358("zm_bgb_consumed", 1);
 		}
 	}
+
+	// restore player controls and movement
 	self bgb_play_gumball_anim_end(gun, bgb, activating);
 	return succeeded;
 }
@@ -600,12 +600,8 @@ function private bgb_play_gumball_anim_begin(bgb, activating)
 
 function private bgb_play_gumball_anim_end(w_original, bgb, activating)
 {
-	/#
-		Assert(!w_original.isPerkBottle);
-	#/
-	/#
-		Assert(w_original != level.weaponReviveTool);
-	#/
+	Assert(!w_original.isPerkBottle);
+	Assert(w_original != level.weaponReviveTool);
 
 	self zm_utility::enable_player_move_states();
 
@@ -627,6 +623,8 @@ function private bgb_play_gumball_anim_end(w_original, bgb, activating)
 	else if (w_original != level.weaponNone && !zm_utility::is_placeable_mine(w_original) && !zm_equipment::is_equipment_that_blocks_purchase(w_original))
 	{
 		self zm_weapons::switch_back_primary_weapon(w_original);
+		// ww: the knives have no first raise anim so they will never get a "weapon_change_complete" notify
+		// meaning it will never leave this function and will break buying weapons for the player
 		if (zm_utility::is_melee_weapon(w_original))
 		{
 			self zm_utility::decrement_is_drinking();
@@ -635,6 +633,7 @@ function private bgb_play_gumball_anim_end(w_original, bgb, activating)
 	}
 	else
 	{
+		// try to switch to first primary weapon
 		self zm_weapons::switch_back_primary_weapon();
 	}
 
@@ -687,6 +686,7 @@ function private bgb_limit_monitor()
 
 				self thread bgb_set_debug_text(self.bgb, i);
 				self waittill("bgb_activation");
+
 				while (IS_TRUE(self get_active())) // if we have a long, timed activation period, wait for that to end before updating the remaining-activations ui
 				{
 					WAIT_SERVER_FRAME;
@@ -697,6 +697,7 @@ function private bgb_limit_monitor()
 			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 
 			self set_timer(0, level.bgb[self.bgb].limit);
+
 			while (IS_TRUE(self.bgb_activation_in_progress))
 			{
 				WAIT_SERVER_FRAME;
@@ -724,15 +725,15 @@ function private bgb_limit_monitor()
 
 		case "event":
 			self thread bgb_set_debug_text(self.bgb);
+
 			self bgb_set_timer_clientfield(1);
+
 			self [[ level.bgb[self.bgb].limit ]]();
 			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 			break;
 
 		default:
-			/#
-				Assert(false, "Dev Block strings are not supported" + self.bgb + "Dev Block strings are not supported" + level.bgb[self.bgb].limit_type + "Dev Block strings are not supported");
-			#/
+			Assert(false, "bgb::bgb_limit_monitor(): BGB '" + self.bgb + "': limit_type '" + level.bgb[self.bgb].limit_type + "' is not supported");
 	}
 	self thread take();
 }
@@ -1039,59 +1040,34 @@ function clear_timer()
 
 function register(name, limit_type, limit, enable_func, disable_func, validation_func, activation_func)
 {
-	/#
-		Assert(IsDefined(name), "Dev Block strings are not supported");
-	#/
-	/#
-		Assert("Dev Block strings are not supported" != name, "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
-	#/
-	/#
-		Assert(!IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(name), "bgb::register(): name must be defined");
+	Assert("none" != name, "bgb::register(): name cannot be '" + "none" + "', that name is reserved as an internal sentinel value");
+	Assert(!IsDefined(level.bgb[name]), "bgb::register(): BGB '" + name + "' has already been registered");
 
-	/#
-		Assert(IsDefined(limit_type), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
-	/#
-		Assert(IsDefined(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(limit_type), "bgb::register(): BGB '" + name + "': limit_type must be defined");
+	Assert(IsDefined(limit), "bgb::register(): BGB '" + name + "': limit must be defined");
 
-	/#
-		Assert(!IsDefined(enable_func) || IsFunctionPtr(enable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
-	/#
-		Assert(!IsDefined(disable_func) || IsFunctionPtr(disable_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(!IsDefined(enable_func) || IsFunctionPtr(enable_func), "bgb::register(): BGB '" + name + "': enable_func must be undefined or a function pointer");
+	Assert(!IsDefined(disable_func) || IsFunctionPtr(disable_func), "bgb::register(): BGB '" + name + "': disable_func must be undefined or a function pointer");
 
 	switch(limit_type)
 	{
 		case "activated":
-			/#
-				Assert(!IsDefined(validation_func) || IsFunctionPtr(validation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
-			/#
-				Assert(IsDefined(activation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
-			/#
-				Assert(IsFunctionPtr(activation_func), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
+			Assert(!IsDefined(validation_func) || IsFunctionPtr(validation_func), "bgb::register(): BGB '" + name + "': validation_func must be undefined or a function pointer for limit_type '" + limit_type + "'");
+			Assert(IsDefined(activation_func), "bgb::register(): BGB '" + name + "': activation_func must be defined for limit_type '" + limit_type + "'");
+			Assert(IsFunctionPtr(activation_func), "bgb::register(): BGB '" + name + "': activation_func must be a function pointer for limit_type '" + limit_type + "'");
+			// fallthrough
 		case "rounds":
 		case "time":
-			/#
-				Assert(IsInt(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
+			Assert(IsInt(limit), "bgb::register(): BGB '" + name + "': limit '" + limit + "' must be an int for limit_type '" + limit_type + "'");
 			break;
 		
 		case "event":
-			/#
-				Assert(IsFunctionPtr(limit), "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
+			Assert(IsFunctionPtr(limit), "bgb::register(): BGB '" + name + "': limit must be a function pointer for limit_type '" + limit_type + "'");
 			break;
 
 		default:
-			/#
-				Assert(false, "Dev Block strings are not supported" + name + "Dev Block strings are not supported" + limit_type + "Dev Block strings are not supported");
-			#/
+			Assert(false, "bgb::register(): BGB '" + name + "': limit_type '" + limit_type + "' is not supported");
 	}
 
 	level.bgb[name] = SpawnStruct();
@@ -1111,42 +1087,32 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 
 function register_actor_damage_override(name, actor_damage_override_func)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::register_actor_damage_override(): BGB '" + name + "' was never registered");
 	level.bgb[name].actor_damage_override_func = actor_damage_override_func;
 }
 
 function register_vehicle_damage_override(name, vehicle_damage_override_func)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::register_vehicle_damage_override(): BGB '" + name + "' was never registered");
 	level.bgb[name].vehicle_damage_override_func = vehicle_damage_override_func;
 }
 
 function register_actor_death_override(name, actor_death_override_func)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::register_actor_death_override(): BGB '" + name + "' was never registered");
 	level.bgb[name].actor_death_override_func = actor_death_override_func;
 }
 
 function register_lost_perk_override(name, lost_perk_override_func, lost_perk_override_func_always_run)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::register_lost_perk_override(): BGB '" + name + "' was never registered");
 	level.bgb[name].lost_perk_override_func = lost_perk_override_func;
 	level.bgb[name].lost_perk_override_func_always_run = lost_perk_override_func_always_run;
 }
 
 function register_add_to_player_score_override(name, add_to_player_score_override_func, add_to_player_score_override_func_always_run)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::register_add_to_player_score_override(): BGB '" + name + "' was never registered");
 	level.bgb[name].add_to_player_score_override_func = add_to_player_score_override_func;
 	level.bgb[name].add_to_player_score_override_func_always_run = add_to_player_score_override_func_always_run;
 }
@@ -1162,9 +1128,7 @@ function register_add_to_player_score_override(name, add_to_player_score_overrid
 */
 function function_4cda71bf(name, var_7ca0e2a7)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::function_4cda71bf(): BGB '" + name + "' was never registered");
 	level.bgb[name].var_7ca0e2a7 = var_7ca0e2a7;
 }
 
@@ -1179,9 +1143,7 @@ function function_4cda71bf(name, var_7ca0e2a7)
 */
 function function_93da425(name, var_35e23ba2)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::function_93da425(): BGB '" + name + "' was never registered");
 	level.bgb[name].var_35e23ba2 = var_35e23ba2;
 }
 
@@ -1196,9 +1158,7 @@ function function_93da425(name, var_35e23ba2)
 */
 function function_2060b89(name)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::function_2060b89(): BGB '" + name + "' was never registered");
 	level.bgb[name].var_50fe45f6 = true;
 }
 
@@ -1213,9 +1173,7 @@ function function_2060b89(name)
 */
 function function_f132da9c(name)
 {
-	/#
-		Assert(IsDefined(level.bgb[name]), "Dev Block strings are not supported" + name + "Dev Block strings are not supported");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::function_f132da9c(): BGB '" + name + "' was never registered");
 	level.bgb[name].var_7ea552f4 = true;
 }
 
@@ -1230,7 +1188,7 @@ function function_f132da9c(name)
 */
 function function_d35f60a1(name)
 {
-	unlocked = __protected__getbgbunlocked();
+	unlocked = __protected__GetBGBUnlocked();
 	if (unlocked)
 	{
 		self give(name);
@@ -1246,9 +1204,7 @@ function give(name)
 		return;
 	}
 
-	/#
-		Assert(IsDefined(level.bgb[name]), "bgb::give(): BGB '" + name + "' was never registered");
-	#/
+	Assert(IsDefined(level.bgb[name]), "bgb::give(): BGB '" + name + "' was never registered");
 
 	self notify("bgb_update", name, self.bgb);
 	self notify("bgb_update_give_" + name);
@@ -1303,17 +1259,13 @@ function get_enabled()
 
 function is_enabled(name)
 {
-	/#
-		Assert(IsDefined(self.bgb));
-	#/
+	Assert(IsDefined(self.bgb));
 	return self.bgb == name;
 }
 
 function any_enabled()
 {
-	/#
-		Assert(IsDefined(self.bgb));
-	#/
+	Assert(IsDefined(self.bgb));
 	return self.bgb !== "none";
 }
 
@@ -1321,9 +1273,7 @@ function is_team_enabled(str_name)
 {
 	foreach (player in level.players)
 	{
-		/#
-			Assert(IsDefined(player.bgb));
-		#/
+		Assert(IsDefined(player.bgb));
 		if (player.bgb == str_name)
 		{
 			return true;
