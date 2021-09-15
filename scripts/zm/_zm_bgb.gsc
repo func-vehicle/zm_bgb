@@ -83,7 +83,7 @@ function private __main__()
 
 function private on_player_spawned()
 {
-	self.bgb = "none";
+	self.bgb = BGB_RESERVED_NAME;
 
 	if (!IS_TRUE(level.bgb_in_use))
 	{
@@ -217,6 +217,7 @@ function private bgb_player_monitor()
 	for(;;)
 	{
 		str_return = level util::waittill_any_return("between_round_over", "restart_round");
+
 		if (IsDefined(level.var_4824bb2d))
 		{
 			if (!IS_TRUE(self [[ level.var_4824bb2d ]]()))
@@ -224,6 +225,7 @@ function private bgb_player_monitor()
 				continue;
 			}
 		}
+		
 		if (str_return === "restart_round")
 		{
 			level waittill("between_round_over");
@@ -248,11 +250,11 @@ function private setup_devgui()
 		keys = GetArrayKeys(level.bgb);
 		foreach (key in keys)
 		{
-			AddDebugCommand(bgb_devgui_base + key + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + key + "Dev Block strings are not supported");
+			AddDebugCommand(bgb_devgui_base + key + "/.Give\" \"set " + "bgb_acquire_devgui" + " " + key + "\" \n");
 		}
 
 		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
-		AddDebugCommand(bgb_devgui_base + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported" + "Dev Block strings are not supported");
+		AddDebugCommand(bgb_devgui_base + "Clear Current\" \"set " + "bgb_acquire_devgui" + " " + BGB_RESERVED_NAME + "\" \n");
 
 		for (i = 0; i < 4; i++)
 		{
@@ -270,11 +272,14 @@ function private bgb_devgui_think()
 		for(;;)
 		{
 			bgb_acquire_name = GetDvarString("bgb_acquire_devgui");
+
 			if (bgb_acquire_name != "")
 			{
 				bgb_devgui_acquire(bgb_acquire_name);
 			}
+
 			SetDvar("bgb_acquire_devgui", "");
+
 			wait(0.5);
 		}
 	#/
@@ -291,11 +296,13 @@ function private bgb_devgui_acquire(bgb_name)
 			{
 				continue;
 			}
-			if ("none" == bgb_name)
+
+			if (BGB_RESERVED_NAME == bgb_name)
 			{
 				players[i] thread take();
 				continue;
 			}
+
 			__protected__SetBGBUnlocked(true);
 			players[i] thread bgb_gumball_anim(bgb_name, false);
 			__protected__SetBGBUnlocked(false);
@@ -367,7 +374,7 @@ function private bgb_set_debug_text(name, activations_remaining)
 
 		wait(1);
 
-		if ("none" == name)
+		if (BGB_RESERVED_NAME == name)
 		{
 			self.bgb_debug_text fadeOverTime(1);
 			self.bgb_debug_text.alpha = 0;
@@ -379,7 +386,7 @@ function private bgb_set_debug_text(name, activations_remaining)
 function bgb_print_stats(bgb)
 {
 	/#
-		PrintTopRightln(bgb + "Dev Block strings are not supported" + self.bgb_stats[bgb].bgb_available_at_start, (1, 1, 1));
+		PrintTopRightln( bgb + " available_at_start: " + self.bgb_stats[bgb].bgb_available_at_start, ( 1, 1, 1 ) );
 		PrintTopRightln( bgb + " used_this_session: " + self.bgb_stats[ bgb ].bgb_used_this_game, ( 1, 1, 1 ) );
 		n_available = self.bgb_stats[bgb].bgb_available_at_start - self.bgb_stats[bgb].bgb_used_this_game;
 		PrintTopRightln( bgb + " available: " + n_available, ( 1, 1, 1 ) );
@@ -480,6 +487,7 @@ function bgb_gumball_anim(bgb, activating)
 	level endon("end_game");
 
 	unlocked = __protected__GetBGBUnlocked();
+
 	if (activating)
 	{
 		self thread function_c3e0b2ba(bgb);
@@ -662,7 +670,7 @@ function private bgb_limit_monitor()
 
 	switch(level.bgb[self.bgb].limit_type)
 	{
-		case "activated":
+		case BGB_LIMIT_TYPE_ACTIVATED:
 			self thread bgb_activation_monitor();
 
 			for (i = level.bgb[self.bgb].limit; i > 0; i--)
@@ -698,14 +706,14 @@ function private bgb_limit_monitor()
 			}
 			break;
 
-		case "time":
+		case BGB_LIMIT_TYPE_TIME:
 			self thread bgb_set_debug_text(self.bgb);
 			self thread run_timer(level.bgb[self.bgb].limit);
 			wait(level.bgb[self.bgb].limit);
 			self PlaySoundToPlayer("zmb_bgb_power_done", self);
 			break;
 
-		case "rounds":
+		case BGB_LIMIT_TYPE_ROUNDS:
 			self thread bgb_set_debug_text(self.bgb);
 			count = level.bgb[self.bgb].limit + 1;
 			for (i = 0; i < count; i++)
@@ -717,7 +725,7 @@ function private bgb_limit_monitor()
 			self PlaySoundToPlayer("zmb_bgb_power_done_delayed", self);
 			break;
 
-		case "event":
+		case BGB_LIMIT_TYPE_EVENT:
 			self thread bgb_set_debug_text(self.bgb);
 
 			self bgb_set_timer_clientfield(1);
@@ -757,7 +765,7 @@ function private bgb_activation_monitor()
 	self notify("bgb_activation_monitor");
 	self endon("bgb_activation_monitor");
 
-	if ("activated" != level.bgb[self.bgb].limit_type)
+	if (level.bgb[self.bgb].limit_type != BGB_LIMIT_TYPE_ACTIVATED)
 	{
 		return;
 	}
@@ -1035,7 +1043,7 @@ function clear_timer()
 function register(name, limit_type, limit, enable_func, disable_func, validation_func, activation_func)
 {
 	Assert(IsDefined(name), "bgb::register(): name must be defined");
-	Assert("none" != name, "bgb::register(): name cannot be '" + "none" + "', that name is reserved as an internal sentinel value");
+	Assert(BGB_RESERVED_NAME != name, "bgb::register(): name cannot be '" + BGB_RESERVED_NAME + "', that name is reserved as an internal sentinel value");
 	Assert(!IsDefined(level.bgb[name]), "bgb::register(): BGB '" + name + "' has already been registered");
 
 	Assert(IsDefined(limit_type), "bgb::register(): BGB '" + name + "': limit_type must be defined");
@@ -1046,17 +1054,17 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 
 	switch(limit_type)
 	{
-		case "activated":
+		case BGB_LIMIT_TYPE_ACTIVATED:
 			Assert(!IsDefined(validation_func) || IsFunctionPtr(validation_func), "bgb::register(): BGB '" + name + "': validation_func must be undefined or a function pointer for limit_type '" + limit_type + "'");
 			Assert(IsDefined(activation_func), "bgb::register(): BGB '" + name + "': activation_func must be defined for limit_type '" + limit_type + "'");
 			Assert(IsFunctionPtr(activation_func), "bgb::register(): BGB '" + name + "': activation_func must be a function pointer for limit_type '" + limit_type + "'");
 			// fallthrough
-		case "rounds":
-		case "time":
+		case BGB_LIMIT_TYPE_ROUNDS:
+		case BGB_LIMIT_TYPE_TIME:
 			Assert(IsInt(limit), "bgb::register(): BGB '" + name + "': limit '" + limit + "' must be an int for limit_type '" + limit_type + "'");
 			break;
 		
-		case "event":
+		case BGB_LIMIT_TYPE_EVENT:
 			Assert(IsFunctionPtr(limit), "bgb::register(): BGB '" + name + "': limit must be a function pointer for limit_type '" + limit_type + "'");
 			break;
 
@@ -1070,7 +1078,7 @@ function register(name, limit_type, limit, enable_func, disable_func, validation
 	level.bgb[name].limit = limit;
 	level.bgb[name].enable_func = enable_func;
 	level.bgb[name].disable_func = disable_func;
-	if ("activated" == limit_type)
+	if (limit_type == BGB_LIMIT_TYPE_ACTIVATED)
 	{
 		level.bgb[name].validation_func = validation_func;
 		level.bgb[name].activation_func = activation_func;
@@ -1193,7 +1201,7 @@ function give(name)
 {
 	self thread take();
 
-	if ("none" == name)
+	if (BGB_RESERVED_NAME == name)
 	{
 		return;
 	}
@@ -1213,7 +1221,8 @@ function give(name)
 		self thread [[ level.bgb[name].enable_func ]]();
 	}
 
-	if (IsDefined("activated" == level.bgb[name].limit_type))
+	// TODO: this looks wrong
+	if (IsDefined(BGB_LIMIT_TYPE_ACTIVATED == level.bgb[name].limit_type))
 	{
 		self SetActionSlot(1, "bgb");
 	}
@@ -1224,14 +1233,14 @@ function give(name)
 
 function take()
 {
-	if ("none" == self.bgb)
+	if (BGB_RESERVED_NAME == self.bgb)
 	{
 		return;
 	}
 
 	self SetActionSlot(1, "");
 
-	self thread bgb_set_debug_text("none");
+	self thread bgb_set_debug_text(BGB_RESERVED_NAME);
 
 	if (IsDefined(level.bgb[self.bgb].disable_func))
 	{
@@ -1240,10 +1249,10 @@ function take()
 
 	self bgb_clear_monitors_and_clientfields();
 
-	self notify("bgb_update", "none", self.bgb);
+	self notify("bgb_update", BGB_RESERVED_NAME, self.bgb);
 	self notify("bgb_update_take_" + self.bgb);
 
-	self.bgb = "none";
+	self.bgb = BGB_RESERVED_NAME;
 }
 
 function get_enabled()
@@ -1260,7 +1269,7 @@ function is_enabled(name)
 function any_enabled()
 {
 	Assert(IsDefined(self.bgb));
-	return self.bgb !== "none";
+	return self.bgb !== BGB_RESERVED_NAME;
 }
 
 function is_team_enabled(str_name)
@@ -1386,7 +1395,7 @@ function actor_damage_override(inflictor, attacker, damage, flags, meansOfDeath,
 	{
 		name = attacker get_enabled(); // get the name of the attacking player's bgb
 
-		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_damage_override_func))
+		if (name !== BGB_RESERVED_NAME && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_damage_override_func))
 		{
 			damage = [[ level.bgb[name].actor_damage_override_func ]](inflictor, attacker, damage, flags, meansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime, boneIndex, surfaceType);
 		}
@@ -1405,7 +1414,7 @@ function vehicle_damage_override(eInflictor, eAttacker, iDamage, iDFlags, sMeans
 	{
 		name = eAttacker get_enabled(); // get the name of the attacking player's bgb
 
-		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].vehicle_damage_override_func))
+		if (name !== BGB_RESERVED_NAME && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].vehicle_damage_override_func))
 		{
 			iDamage = [[ level.bgb[name].vehicle_damage_override_func ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, vDamageOrigin, psOffsetTime, damageFromUnderneath, modelIndex, partName, vSurfaceNormal);
 		}
@@ -1423,7 +1432,8 @@ function actor_death_override(attacker)
 	if (IsPlayer(attacker))
 	{
 		name = attacker get_enabled();
-		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_death_override_func))
+		
+		if (name !== BGB_RESERVED_NAME && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].actor_death_override_func))
 		{
 			damage = [[ level.bgb[name].actor_death_override_func ]](attacker);
 		}
@@ -1439,6 +1449,7 @@ function lost_perk_override(perk)
 	{
 		return b_result;
 	}
+
 	if (!IS_TRUE(self.laststand))
 	{
 		return b_result;
@@ -1463,7 +1474,7 @@ function lost_perk_override(perk)
 		name = player get_enabled(); // get the name of the player's bgb
 
 		// if there's a lost perk override func associated with the player's bgb, call it, allowing it to prevent loss of the perk if desired
-		if (name !== "none" && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].lost_perk_override_func))
+		if (name !== BGB_RESERVED_NAME && IsDefined(level.bgb[name]) && IsDefined(level.bgb[name].lost_perk_override_func))
 		{
 			b_result = [[ level.bgb[name].lost_perk_override_func ]](perk, self, player);
 			if (b_result)
@@ -1489,19 +1500,23 @@ function add_to_player_score_override(n_points, str_awarded_by)
 	for (i = 0; i < keys.size; i++)
 	{
 		str_bgb = keys[i];
+
 		if (str_bgb === str_enabled)
 		{
 			continue;
 		}
+
 		if (IS_TRUE(level.bgb[str_bgb].add_to_player_score_override_func_always_run) && IsDefined(level.bgb[str_bgb].add_to_player_score_override_func))
 		{
 			n_points = [[ level.bgb[str_bgb].add_to_player_score_override_func ]](n_points, str_awarded_by, false);
 		}
 	}
-	if (str_enabled !== "none" && IsDefined(level.bgb[str_enabled]) && IsDefined(level.bgb[str_enabled].add_to_player_score_override_func))
+
+	if (str_enabled !== BGB_RESERVED_NAME && IsDefined(level.bgb[str_enabled]) && IsDefined(level.bgb[str_enabled].add_to_player_score_override_func))
 	{
 		n_points = [[ level.bgb[str_enabled].add_to_player_score_override_func ]](n_points, str_awarded_by, true);
 	}
+
 	return n_points;
 }
 
@@ -1523,10 +1538,12 @@ function function_d51db887()
 		{
 			continue;
 		}
+
 		if (level.bgb[keys[i]].dlc_index > 0)
 		{
 			continue;
 		}
+		
 		return keys[i];
 	}
 }

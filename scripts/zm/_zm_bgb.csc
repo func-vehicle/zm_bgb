@@ -113,19 +113,11 @@ function private bgb_finalize()
 
 function register(name, limit_type)
 {
-	/#
-		Assert(IsDefined(name), "bgb::register(): name must be defined");
-	#/
-	/#
-		Assert("none" != name, bgb::register(): name cannot be '" + "none" + "', that name is reserved as an internal sentinel value");
-	#/
-	/#
-		Assert(!IsDefined(level.bgb[name]), "bgb::register(): BGB '" + name + "' has already been registered");
-	#/
+	Assert(IsDefined(name), "bgb::register(): name must be defined");
+	Assert(BGB_RESERVED_NAME != name, "bgb::register(): name cannot be '" + BGB_RESERVED_NAME + "', that name is reserved as an internal sentinel value");
+	Assert(!IsDefined(level.bgb[name]), "bgb::register(): BGB '" + name + "' has already been registered");
 
-	/#
-		Assert(IsDefined(limit_type), "bgb::register(): BGB '" + name + "': limit_type must be defined");
-	#/
+	Assert(IsDefined(limit_type), "bgb::register(): BGB '" + name + "': limit_type must be defined");
 
 	level.bgb[name] = SpawnStruct();
 	
@@ -142,39 +134,37 @@ function private bgb_lightbar_color(localClientNum, time)
 	{
 		return;
 	}
+
 	if (!IsDefined(self.bgb) || !IsDefined(level.bgb[self.bgb]))
 	{
 		return;
 	}
+
 	switch(level.bgb[self.bgb].limit_type)
 	{
-		case "activated":
-		{
+		case BGB_LIMIT_TYPE_ACTIVATED:
 			color = (25, 0, 50) / 255;
 			break;
-		}
-		case "event":
-		{
+		
+		case BGB_LIMIT_TYPE_EVENT:
 			color = (100, 50, 0) / 255;
 			break;
-		}
-		case "rounds":
-		{
+		
+		case BGB_LIMIT_TYPE_ROUNDS:
 			color = (1, 149, 244) / 255;
 			break;
-		}
-		case "time":
-		{
+		
+		case BGB_LIMIT_TYPE_TIME:
 			color = (19, 244, 20) / 255;
 			break;
-		}
-		case default:
-		{
+		
+		default:
 			return;
-		}
 	}
 	self SetControllerLightbarColor(localClientNum, color);
+
 	wait(time);
+
 	if (IsDefined(self))
 	{
 		self SetControllerLightbarColor(localClientNum);
